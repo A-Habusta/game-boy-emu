@@ -1,3 +1,3 @@
-# Replace this with your name
+# Adrian Habusta
 
-Describe your project(s) here.
+Repository for the NPRG045 course
