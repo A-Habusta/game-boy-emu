@@ -1,3 +1,3 @@
 # Adrian Habusta
 
-Repository for the NPRG045 course
+Repository for the NPRG041 course
