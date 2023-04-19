@@ -16,6 +16,14 @@ namespace registers {
     constexpr int FLAG_HALF_CARRY = 5;
     constexpr int FLAG_CARRY = 4;
 
+    enum class whole_register_name {
+        AF, BC, DE, HL, SP, PC
+    };
+
+    enum class half_register_name {
+        A, F, B, C, D, E, H, L
+    };
+
 
     struct whole_registers {
         word AF;
@@ -54,6 +62,11 @@ namespace registers {
         void write_subtract_flag(bool value) { half.F = utility::write_bit(half.F, FLAG_SUBTRACT, value); }
         void write_half_carry_flag(bool value) { half.F = utility::write_bit(half.F, FLAG_HALF_CARRY, value); }
         void write_carry_flag(bool value) { half.F = utility::write_bit(half.F, FLAG_CARRY, value); }
+
+        void write_to_register(half_register_name register_name, byte value);
+        void write_to_register(whole_register_name  register_name, word value);
+        byte read_from_register(half_register_name register_name);
+        word read_from_register(whole_register_name register_name);
     };
 }
 
