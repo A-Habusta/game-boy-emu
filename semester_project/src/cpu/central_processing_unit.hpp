@@ -1,0 +1,11 @@
+// File: central_processing_unit.hpp
+//
+// Created by Adrian Habusta on 19.04.2023
+//
+
+#ifndef SEMESTER_PROJECT_CENTRAL_PROCESSING_UNIT_HPP
+#define SEMESTER_PROJECT_CENTRAL_PROCESSING_UNIT_HPP
+
+
+
+#endif //SEMESTER_PROJECT_CENTRAL_PROCESSING_UNIT_HPP
