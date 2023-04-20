@@ -424,7 +424,7 @@ namespace central_processing_unit {
         write_byte(address, result);
     }
 
-    void cpu::bit(registers::half_register_name target_register, int bit) {
+    void cpu::bit(int bit, registers::half_register_name target_register) {
         byte value = registers.read_from_register(target_register);
 
         registers.write_zero_flag(utility::get_bit(value, bit) == 0);
@@ -432,7 +432,7 @@ namespace central_processing_unit {
         registers.write_half_carry_flag(1);
     }
 
-    void cpu::bit(word address, int bit) {
+    void cpu::bit(int bit, word address) {
         byte value = read_byte(address);
 
         registers.write_zero_flag(utility::get_bit(value, bit) == 0);
@@ -440,15 +440,27 @@ namespace central_processing_unit {
         registers.write_half_carry_flag(1);
     }
 
-    void cpu::set(registers::half_register_name target_register, int bit) {
+    void cpu::set(int bit, registers::half_register_name target_register) {
         byte value = registers.read_from_register(target_register);
         value = utility::set_bit(value, bit);
         registers.write_to_register(target_register, value);
     }
 
-    void cpu::set(byte bit, word address) {
+    void cpu::set(int bit, word address) {
         byte value = read_byte(address);
         value = utility::set_bit(value, bit);
+        write_byte(address, value);
+    }
+
+    void cpu::res(int bit, registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+        value = utility::clear_bit(value, bit);
+        registers.write_to_register(target_register, value);
+    }
+
+    void cpu::res(int bit, word address) {
+        byte value = read_byte(address);
+        value = utility::clear_bit(value, bit);
         write_byte(address, value);
     }
 }

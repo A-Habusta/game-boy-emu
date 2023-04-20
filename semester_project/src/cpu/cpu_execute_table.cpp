@@ -325,6 +325,7 @@ namespace central_processing_unit {
             case 0x00: break;
             case 0x10: stop(); break;
             case 0x76: halt(); break;
+            case 0xCB: execute_cb_prefixed_instruction(); break;
             case 0xF3: disable_interrupts(); break;
             case 0xFB: queue_enable_interrupts(); break;
 
@@ -338,9 +339,6 @@ namespace central_processing_unit {
             case 0x0F: rotate_a_right(utility::get_bit(registers.half.A, 0)); break;
             //rra
             case 0x1F: rotate_a_right(registers.read_carry_flag()); break;
-
-
-            case 0xCB: execute_cb_prefixed_instruction(); break;
         }
 
         prefetch_next_instruction();

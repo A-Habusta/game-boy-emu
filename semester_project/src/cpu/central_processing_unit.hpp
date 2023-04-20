@@ -175,14 +175,14 @@ namespace central_processing_unit {
         void swap(registers::half_register_name target_register);
         void swap(word target_address);
 
-        void bit(registers::half_register_name target_register, int bit);
-        void bit(word target_address, int bit);
+        void bit(int bit, registers::half_register_name target_register);
+        void bit(int bit, word target_address);
 
-        void set(registers::half_register_name target_register, int bit);
-        void set(word target_address, int bit);
+        void set(int bit, registers::half_register_name target_register);
+        void set(int bit, word target_address);
 
-        void res(registers::half_register_name target_register, int bit);
-        void res(word target_address, int bit);
+        void res(int bit, registers::half_register_name target_register);
+        void res(int bit, word target_address);
     };
 }
 
