@@ -166,4 +166,66 @@ namespace central_processing_unit {
 
         run_phantom_cycle();
     }
+
+    void cpu::set_carry_flag(bool value) {
+        registers.write_subtract_flag(0);
+        registers.write_half_carry_flag(0);
+        registers.write_carry_flag(value);
+    }
+
+    void cpu::complement_A() {
+        registers.half.A = ~registers.half.A;
+        registers.write_subtract_flag(1);
+        registers.write_half_carry_flag(1);
+    }
+
+    void cpu::daa() {
+
+    }
+
+    void cpu::jump_hl() {
+        registers.whole.PC = registers.whole.HL;
+    }
+
+    void cpu::jump(word address, bool condition) {
+        if (condition) {
+            run_phantom_cycle();
+            registers.whole.PC = address;
+        }
+    }
+
+    void cpu::jump_relative(byte offset, bool condition) {
+        if (condition) {
+            offset = (int)(int8_t)(offset);
+            int result = (int)registers.whole.PC + offset;
+
+            run_phantom_cycle();
+            registers.whole.PC = (word)result;
+        }
+    }
+
+    void cpu::call(word address, bool condition) {
+        if (condition) {
+            // Phantom cycle is already included in the push method
+            push(registers.whole.PC);
+            registers.whole.PC = address;
+        }
+    }
+
+    void cpu::return_always() {
+        pop(registers::whole_register_name::PC);
+        run_phantom_cycle();
+    }
+
+    void cpu::return_conditional(bool condition) {
+        run_phantom_cycle();
+        if (condition) {
+            pop(registers::whole_register_name::PC);
+            run_phantom_cycle();
+        }
+    }
+
+    void cpu::queue_enable_interrupts() {
+        queued_ime_enable = true;
+    }
 }

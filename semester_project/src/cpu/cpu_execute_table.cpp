@@ -8,6 +8,10 @@
 
 namespace central_processing_unit {
     void cpu::execute_instruction() {
+        if (queued_ime_enable) {
+            enable_interrupts();
+        }
+
         switch(cached_instruction) {
             //load register8 <- immediate
             case 0x3E: load(registers::half_register_name::A, read_byte_at_pc_with_increment()); break;
@@ -125,7 +129,6 @@ namespace central_processing_unit {
             //load SP <- HL
             case 0xF9: run_phantom_cycle(); load(registers::whole_register_name::SP, registers.whole.HL); break;
 
-            //TODO
             //load HL <- SP + immediate
             case 0xF8: load(registers::whole_register_name::HL, add_to_sp(read_byte_at_pc_with_increment())); break;
 
@@ -271,6 +274,62 @@ namespace central_processing_unit {
             case 0x1B: dec(registers::whole_register_name::DE); break;
             case 0x2B: dec(registers::whole_register_name::HL); break;
             case 0x3B: dec(registers::whole_register_name::SP); break;
+
+            //carry
+            case 0x37: set_carry_flag(1); break;
+            case 0x3F: set_carry_flag(!registers.read_carry_flag()); break;
+
+            //complement A
+            case 0x2F: complement_A(); break;
+            //A -> binary coded decimal
+            case 0x27: daa(); break;
+
+            //control flow
+            case 0xC3: jump(read_word_at_pc_with_increment(), true); break;
+            case 0xC2: jump(read_word_at_pc_with_increment(), !registers.read_zero_flag()); break;
+            case 0xCA: jump(read_word_at_pc_with_increment(), registers.read_zero_flag()); break;
+            case 0xD2: jump(read_word_at_pc_with_increment(), !registers.read_carry_flag()); break;
+            case 0xDA: jump(read_word_at_pc_with_increment(), registers.read_carry_flag()); break;
+
+            case 0xE9: jump_hl(); break;
+
+            case 0x18: jump_relative(read_byte_at_pc_with_increment(), true); break;
+            case 0x20: jump_relative(read_byte_at_pc_with_increment(), !registers.read_zero_flag()); break;
+            case 0x28: jump_relative(read_byte_at_pc_with_increment(), registers.read_zero_flag()); break;
+            case 0x30: jump_relative(read_byte_at_pc_with_increment(), !registers.read_carry_flag()); break;
+            case 0x38: jump_relative(read_byte_at_pc_with_increment(), registers.read_carry_flag()); break;
+
+            case 0xCD: call(read_word_at_pc_with_increment(), true); break;
+            case 0xC4: call(read_word_at_pc_with_increment(), !registers.read_zero_flag()); break;
+            case 0xCC: call(read_word_at_pc_with_increment(), registers.read_zero_flag()); break;
+            case 0xD4: call(read_word_at_pc_with_increment(), !registers.read_carry_flag()); break;
+            case 0xDC: call(read_word_at_pc_with_increment(), registers.read_carry_flag()); break;
+
+            case 0xC9: return_always(); break;
+            case 0xC0: return_conditional(!registers.read_zero_flag()); break;
+            case 0xC8: return_conditional(registers.read_zero_flag()); break;
+            case 0xD0: return_conditional(!registers.read_carry_flag()); break;
+            case 0xD8: return_conditional(registers.read_carry_flag()); break;
+
+            case 0xD9: return_always(), interrupt_master_enable = true; break;
+
+            case 0xC7: call(0x00, true); break;
+            case 0xCF: call(0x08, true); break;
+            case 0xD7: call(0x10, true); break;
+            case 0xDF: call(0x18, true); break;
+            case 0xE7: call(0x20, true); break;
+            case 0xEF: call(0x28, true); break;
+            case 0xF7: call(0x30, true); break;
+            case 0xFF: call(0x38, true); break;
+
+            // Misc
+            case 0x00: break;
+            case 0x10: stop(); break;
+            case 0x76: halt(); break;
+            case 0xF3: disable_interrupts(); break;
+            case 0xFB: queue_enable_interrupts(); break;
+
+
         }
 
         prefetch_next_instruction();

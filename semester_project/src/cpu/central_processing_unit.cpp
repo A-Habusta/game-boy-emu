@@ -23,4 +23,16 @@ namespace central_processing_unit {
     void cpu::prefetch_next_instruction() {
         cached_instruction = read_byte_at_pc_with_increment();
     }
+
+    void cpu::enable_interrupts() {
+        interrupt_master_enable = true;
+    }
+
+    void cpu::disable_interrupts() {
+        interrupt_master_enable = false;
+        queued_ime_enable = false;
+    }
+
+    void cpu::stop() {}
+    void cpu::halt() {}
 }

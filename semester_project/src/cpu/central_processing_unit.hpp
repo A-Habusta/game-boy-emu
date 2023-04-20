@@ -36,8 +36,13 @@ namespace central_processing_unit {
         byte cached_instruction;
 
         emulatorDelegate run_phantom_cycle;
+        bool interrupt_master_enable = false;
+        bool queued_ime_enable = false;
 
         void prefetch_next_instruction();
+
+        void enable_interrupts();
+        void disable_interrupts();
 
         //
         // Memory access methods
@@ -77,7 +82,6 @@ namespace central_processing_unit {
         // End of memory access methods
         //
 
-
         // Instructions
         void load(registers::half_register_name target_register, byte value);
         void load(registers::whole_register_name target_register, word value);
@@ -108,6 +112,26 @@ namespace central_processing_unit {
         void dec(registers::half_register_name target_register);
         void dec(word target_address);
         void dec(registers::whole_register_name target_register);
+
+        void set_carry_flag(bool value);
+        void complement_A();
+        void daa();
+
+        // These are separated because the timing is different
+        void jump_hl();
+        void jump(word target_address, bool condition);
+
+        void jump_relative(byte offset, bool condition);
+
+        void call(word target_address, bool condition);
+
+        void return_always();
+        void return_conditional(bool condition);
+
+        void queue_enable_interrupts();
+
+        void stop();
+        void halt();
     };
 }
 
