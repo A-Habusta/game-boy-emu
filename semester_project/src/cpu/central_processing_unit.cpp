@@ -32,7 +32,4 @@ namespace central_processing_unit {
         interrupt_master_enable = false;
         queued_ime_enable = false;
     }
-
-    void cpu::stop() {}
-    void cpu::halt() {}
 }

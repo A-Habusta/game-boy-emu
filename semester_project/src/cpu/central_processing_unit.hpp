@@ -132,6 +132,57 @@ namespace central_processing_unit {
 
         void stop();
         void halt();
+
+        void execute_cb_prefixed_instruction();
+
+        //CB instructions and bitwise shifts
+
+        // Helper functions
+        byte shared_shift_in_value_left(byte value, bool bit);
+        byte shared_shift_in_value_right(byte value, bool bit);
+
+        void rotate_right(registers::half_register_name target_register, bool added_bit);
+        void rotate_right(word target_address, bool added_bit);
+
+        void rotate_left(registers::half_register_name target_register, bool added_bit);
+        void rotate_left(word target_address, bool added_bit);
+
+
+        void rotate_a_right(bool added_bit);
+        void rotate_a_left(bool added_bit);
+
+        void rlc(registers::half_register_name target_register);
+        void rlc(word target_address);
+
+        void rl(registers::half_register_name target_register);
+        void rl(word target_address);
+
+        void rrc(registers::half_register_name target_register);
+        void rrc(word target_address);
+
+        void rr(registers::half_register_name target_register);
+        void rr(word target_address);
+
+        void sla(registers::half_register_name target_register);
+        void sla(word target_address);
+
+        void sra(registers::half_register_name target_register);
+        void sra(word target_address);
+
+        void srl(registers::half_register_name target_register);
+        void srl(word target_address);
+
+        void swap(registers::half_register_name target_register);
+        void swap(word target_address);
+
+        void bit(registers::half_register_name target_register, int bit);
+        void bit(word target_address, int bit);
+
+        void set(registers::half_register_name target_register, int bit);
+        void set(word target_address, int bit);
+
+        void res(registers::half_register_name target_register, int bit);
+        void res(word target_address, int bit);
     };
 }
 

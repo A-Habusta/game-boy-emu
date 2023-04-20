@@ -59,7 +59,7 @@ namespace central_processing_unit {
         registers.write_half_carry_flag((registers.whole.HL & 0xFFF) + (value & 0xFFF) & 0x1000 != 0);
         registers.write_carry_flag((dword)registers.whole.HL + (dword)value > 0xFFFF);
 
-        // Not sure if correct order but nothing can access SP (i think) during this cycle anyway
+        // Not sure if correct order but nothing can access SP (I think) during this cycle anyway
         run_phantom_cycle();
         return result;
     }
@@ -227,5 +227,228 @@ namespace central_processing_unit {
 
     void cpu::queue_enable_interrupts() {
         queued_ime_enable = true;
+    }
+
+
+    void cpu::stop() {}
+    void cpu::halt() {}
+
+    byte cpu::shared_shift_in_value_left(byte value, bool bit) {
+        byte result = value << 1 | bit;
+
+        registers.write_zero_flag(result == 0);
+        registers.write_subtract_flag(0);
+        registers.write_half_carry_flag(0);
+        registers.write_carry_flag(value & 0x80 != 0);
+
+        return result;
+    }
+
+    byte cpu::shared_shift_in_value_right(byte value, bool bit) {
+        byte result = value >> 1 | (bit << 7);
+
+        registers.write_zero_flag(result == 0);
+        registers.write_subtract_flag(0);
+        registers.write_half_carry_flag(0);
+        registers.write_carry_flag(value & 0x01 != 0);
+
+        return result;
+    }
+
+    void cpu::rotate_a_left(bool added_bit) {
+        byte result = shared_shift_in_value_left(registers.half.A, added_bit);
+        registers.write_zero_flag(0);
+        registers.half.A = result;
+    }
+
+    void cpu::rotate_a_right(bool added_bit) {
+        byte result = shared_shift_in_value_left(registers.half.A, added_bit);
+        registers.write_zero_flag(0);
+        registers.half.A = result;
+    }
+
+
+    // TODO: Condense these methods
+    void cpu::rlc(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        bool added_bit = utility::get_bit(value, 7);
+        byte result = shared_shift_in_value_left(value, added_bit);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::rlc(word address) {
+        byte value = read_byte(address);
+
+        bool added_bit = utility::get_bit(value, 7);
+        byte result = shared_shift_in_value_left(value, added_bit);
+
+        write_byte(address, result);
+    }
+
+
+    void cpu::rl(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        bool added_bit = registers.read_carry_flag();
+        byte result = shared_shift_in_value_left(value, added_bit);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::rl(word address) {
+        byte value = read_byte(address);
+
+        bool added_bit = registers.read_carry_flag();
+        byte result = shared_shift_in_value_left(value, added_bit);
+
+        write_byte(address, result);
+    }
+
+
+    void cpu::rrc(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        bool added_bit = utility::get_bit(value, 0);
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::rrc(word address) {
+        byte value = read_byte(address);
+
+        bool added_bit = utility::get_bit(value, 0);
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        write_byte(address, result);
+    }
+
+
+    void cpu::rr(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        bool added_bit = registers.read_carry_flag();
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::rr(word address) {
+        byte value = read_byte(address);
+
+        bool added_bit = registers.read_carry_flag();
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        write_byte(address, result);
+    }
+
+    void cpu::sla(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        bool added_bit = 0;
+        byte result = shared_shift_in_value_left(value, added_bit);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::sla(word address) {
+        byte value = read_byte(address);
+
+        bool added_bit = 0;
+        byte result = shared_shift_in_value_left(value, added_bit);
+
+        write_byte(address, result);
+    }
+
+
+    void cpu::sra(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        bool added_bit = 0;
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::sra(word address) {
+        byte value = read_byte(address);
+
+        bool added_bit = 0;
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        write_byte(address, result);
+    }
+
+
+    void cpu::srl(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        bool added_bit = utility::get_bit(value, 7);
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::srl(word address) {
+        byte value = read_byte(address);
+
+        bool added_bit = utility::get_bit(value, 7);
+        byte result = shared_shift_in_value_right(value, added_bit);
+
+        write_byte(address, result);
+    }
+
+    void cpu::swap(registers::half_register_name target_register) {
+        byte value = registers.read_from_register(target_register);
+
+        byte result = (value << 4) | (value >> 4);
+        registers.write_zero_flag(result == 0);
+        registers.write_subtract_flag(0);
+        registers.write_half_carry_flag(0);
+        registers.write_carry_flag(0);
+
+        registers.write_to_register(target_register, result);
+    }
+
+    void cpu::swap(word address) {
+        byte value = read_byte(address);
+
+        byte result = (value << 4) | (value >> 4);
+        registers.write_zero_flag(result == 0);
+        registers.write_subtract_flag(0);
+        registers.write_half_carry_flag(0);
+        registers.write_carry_flag(0);
+
+        write_byte(address, result);
+    }
+
+    void cpu::bit(registers::half_register_name target_register, int bit) {
+        byte value = registers.read_from_register(target_register);
+
+        registers.write_zero_flag(utility::get_bit(value, bit) == 0);
+        registers.write_subtract_flag(0);
+        registers.write_half_carry_flag(1);
+    }
+
+    void cpu::bit(word address, int bit) {
+        byte value = read_byte(address);
+
+        registers.write_zero_flag(utility::get_bit(value, bit) == 0);
+        registers.write_subtract_flag(0);
+        registers.write_half_carry_flag(1);
+    }
+
+    void cpu::set(registers::half_register_name target_register, int bit) {
+        byte value = registers.read_from_register(target_register);
+        value = utility::set_bit(value, bit);
+        registers.write_to_register(target_register, value);
+    }
+
+    void cpu::set(byte bit, word address) {
+        byte value = read_byte(address);
+        value = utility::set_bit(value, bit);
+        write_byte(address, value);
     }
 }
