@@ -123,7 +123,7 @@ namespace central_processing_unit {
             //load indirect <- SP
             case 0x08: load(read_word_at_pc_with_increment(), registers.whole.SP); break;
             //load SP <- HL
-            case 0xF9: run_phantom_cycle(); load(registers::register16::SP, registers.whole.HL); break;
+            case 0xF9: run_phantom_cycle(); load(registers::whole_register_name::SP, registers.whole.HL); break;
 
             //TODO
             //load HL <- SP + immediate
@@ -135,10 +135,98 @@ namespace central_processing_unit {
             case 0xF1: pop(registers::whole_register_name::AF); break;
 
             //push
-            case 0xC5: push(registers::whole_register_name::BC); break;
-            case 0xD5: push(registers::whole_register_name::DE); break;
-            case 0xE5: push(registers::whole_register_name::HL); break;
-            case 0xF5: push(registers::whole_register_name::AF); break;
+            case 0xF5: push(registers.whole.AF); break;
+            case 0xC5: push(registers.whole.BC); break;
+            case 0xD5: push(registers.whole.DE); break;
+            case 0xE5: push(registers.whole.HL); break;
+
+            //add
+            case 0x87: add(registers.half.A); break;
+            case 0x80: add(registers.half.B); break;
+            case 0x81: add(registers.half.C); break;
+            case 0x82: add(registers.half.D); break;
+            case 0x83: add(registers.half.E); break;
+            case 0x84: add(registers.half.H); break;
+            case 0x85: add(registers.half.L); break;
+            case 0x86: add(read_byte(registers.whole.HL)); break;
+            case 0xC6: add(read_byte_at_pc_with_increment()); break;
+
+            //adc
+            case 0x8F: add(registers.half.A, registers.read_carry_flag()); break;
+            case 0x88: add(registers.half.B, registers.read_carry_flag()); break;
+            case 0x89: add(registers.half.C, registers.read_carry_flag()); break;
+            case 0x8A: add(registers.half.D, registers.read_carry_flag()); break;
+            case 0x8B: add(registers.half.E, registers.read_carry_flag()); break;
+            case 0x8C: add(registers.half.H, registers.read_carry_flag()); break;
+            case 0x8D: add(registers.half.L, registers.read_carry_flag()); break;
+            case 0x8E: add(read_byte(registers.whole.HL), registers.read_carry_flag()); break;
+            case 0xCE: add(read_byte_at_pc_with_increment(), registers.read_carry_flag()); break;
+
+            //sub
+            case 0x97: sub(registers.half.A); break;
+            case 0x90: sub(registers.half.B); break;
+            case 0x91: sub(registers.half.C); break;
+            case 0x92: sub(registers.half.D); break;
+            case 0x93: sub(registers.half.E); break;
+            case 0x94: sub(registers.half.H); break;
+            case 0x95: sub(registers.half.L); break;
+            case 0x96: sub(read_byte(registers.whole.HL)); break;
+            case 0xD6: sub(read_byte_at_pc_with_increment()); break;
+
+            //sbc
+            case 0x9F: sub(registers.half.A, registers.read_carry_flag()); break;
+            case 0x98: sub(registers.half.B, registers.read_carry_flag()); break;
+            case 0x99: sub(registers.half.C, registers.read_carry_flag()); break;
+            case 0x9A: sub(registers.half.D, registers.read_carry_flag()); break;
+            case 0x9B: sub(registers.half.E, registers.read_carry_flag()); break;
+            case 0x9C: sub(registers.half.H, registers.read_carry_flag()); break;
+            case 0x9C: sub(registers.half.L, registers.read_carry_flag()); break;
+            case 0x9E: sub(read_byte(registers.whole.HL), registers.read_carry_flag()); break;
+            case 0xDE: sub(read_byte_at_pc_with_increment(), registers.read_carry_flag()); break;
+
+            //and
+            case 0xA7: and_(registers.half.A); break;
+            case 0xA0: and_(registers.half.B); break;
+            case 0xA1: and_(registers.half.C); break;
+            case 0xA2: and_(registers.half.D); break;
+            case 0xA3: and_(registers.half.E); break;
+            case 0xA4: and_(registers.half.H); break;
+            case 0xA5: and_(registers.half.L); break;
+            case 0xA6: and_(read_byte(registers.whole.HL)); break;
+            case 0xE6: and_(read_byte_at_pc_with_increment()); break;
+
+            //or
+            case 0xB7: or_(registers.half.A); break;
+            case 0xB0: or_(registers.half.B); break;
+            case 0xB1: or_(registers.half.C); break;
+            case 0xB2: or_(registers.half.D); break;
+            case 0xB3: or_(registers.half.E); break;
+            case 0xB4: or_(registers.half.H); break;
+            case 0xB5: or_(registers.half.L); break;
+            case 0xB6: or_(read_byte(registers.whole.HL)); break;
+            case 0xF6: or_(read_byte_at_pc_with_increment()); break;
+
+            //xor
+            case 0xAF: xor_(registers.half.A); break;
+            case 0xA8: xor_(registers.half.B); break;
+            case 0xA9: xor_(registers.half.C); break;
+            case 0xAA: xor_(registers.half.D); break;
+            case 0xAB: xor_(registers.half.E); break;
+            case 0xAC: xor_(registers.half.H); break;
+            case 0xAD: xor_(registers.half.L); break;
+            case 0xAE: xor_(read_byte(registers.whole.HL)); break;
+            case 0xEE: xor_(read_byte_at_pc_with_increment()); break;
+
+            //cp
+            case 0xBF: cp(registers.half.A); break;
+            case 0xB8: cp(registers.half.B); break;
+            case 0xB9: cp(registers.half.C); break;
+            case 0xBA: cp(registers.half.D); break;
+            case 0xBB: cp(registers.half.E); break;
+            case 0xBC: cp(registers.half.H); break;
+            case 0xBD: cp(registers.half.L); break;
+            case 0xBE: cp(read_byte(registers.whole.HL)); break;
+            case 0xFE: cp(read_byte_at_pc_with_increment()); break;
         }
     }
 }

@@ -19,14 +19,14 @@ namespace registers {
             default: break;
         }
     }
-    void register_file::write_to_register(word_register target_register, word value) {
+    void register_file::write_to_register(whole_register_name target_register, word value) {
         switch (target_register) {
-            case word_register::AF: whole.AF = value; break;
-            case word_register::BC: whole.BC = value; break;
-            case word_register::DE: whole.DE = value; break;
-            case word_register::HL: whole.HL = value; break;
-            case word_register::SP: whole.SP = value; break;
-            case word_register::PC: whole.PC = value; break;
+            case whole_register_name::AF: whole.AF = value; break;
+            case whole_register_name::BC: whole.BC = value; break;
+            case whole_register_name::DE: whole.DE = value; break;
+            case whole_register_name::HL: whole.HL = value; break;
+            case whole_register_name::SP: whole.SP = value; break;
+            case whole_register_name::PC: whole.PC = value; break;
             default: break;
         }
     }
@@ -45,14 +45,14 @@ namespace registers {
         }
     }
 
-    word register_file::read_from_register(word_register target_register) {
+    word register_file::read_from_register(whole_register_name target_register) {
         switch (target_register) {
-            case word_register::AF: return whole.AF;
-            case word_register::BC: return whole.BC;
-            case word_register::DE: return whole.DE;
-            case word_register::HL: return whole.HL;
-            case word_register::SP: return whole.SP;
-            case word_register::PC: return whole.PC;
+            case whole_register_name::AF: return whole.AF;
+            case whole_register_name::BC: return whole.BC;
+            case whole_register_name::DE: return whole.DE;
+            case whole_register_name::HL: return whole.HL;
+            case whole_register_name::SP: return whole.SP;
+            case whole_register_name::PC: return whole.PC;
             default: return 0;
         }
     }

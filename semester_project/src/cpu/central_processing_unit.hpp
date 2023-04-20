@@ -85,6 +85,16 @@ namespace central_processing_unit {
 
         void pop(registers::whole_register_name target_register);
         void push(word value);
+
+        // Always adds value to A
+        void add(byte value, bool carry = 0);
+        void sub(byte value, bool carry = 0);
+
+        void and_(byte value);
+        void or_(byte value);
+        void xor_(byte value);
+
+        void cp(byte value);
     };
 
 }
