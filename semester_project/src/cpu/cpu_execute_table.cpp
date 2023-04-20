@@ -127,6 +127,7 @@ namespace central_processing_unit {
 
             //TODO
             //load HL <- SP + immediate
+            case 0xF8: load(registers::whole_register_name::HL, add_to_sp(read_byte_at_program_counter_with_increment)); break;
 
             //pop
             case 0xC1: pop(registers::whole_register_name::BC); break;
@@ -145,11 +146,22 @@ namespace central_processing_unit {
             case 0x80: add(registers.half.B); break;
             case 0x81: add(registers.half.C); break;
             case 0x82: add(registers.half.D); break;
+
             case 0x83: add(registers.half.E); break;
             case 0x84: add(registers.half.H); break;
             case 0x85: add(registers.half.L); break;
             case 0x86: add(read_byte(registers.whole.HL)); break;
             case 0xC6: add(read_byte_at_pc_with_increment()); break;
+
+            //add16
+            case 0x09: add16(registers.whole.BC); break;
+            case 0x19: add16(registers.whole.DE); break;
+            case 0x29: add16(registers.whole.HL); break;
+            case 0x39: add16(registers.whole.SP); break;
+
+            //add16  SP + immediate
+            // mildly cursed
+            case 0xE8: registers.whole.SP = add_to_sp(read_byte_at_pc_with_increment); run_phantom_cycle(); break;
 
             //adc
             case 0x8F: add(registers.half.A, registers.read_carry_flag()); break;
@@ -227,6 +239,40 @@ namespace central_processing_unit {
             case 0xBD: cp(registers.half.L); break;
             case 0xBE: cp(read_byte(registers.whole.HL)); break;
             case 0xFE: cp(read_byte_at_pc_with_increment()); break;
+
+            //inc 8bit
+            case 0x3C: inc(registers::half_register_name::A); break;
+            case 0x04: inc(registers::half_register_name::B); break;
+            case 0x0C: inc(registers::half_register_name::C); break;
+            case 0x14: inc(registers::half_register_name::D); break;
+            case 0x1C: inc(registers::half_register_name::E); break;
+            case 0x24: inc(registers::half_register_name::H); break;
+            case 0x2C: inc(registers::half_register_name::L); break;
+            case 0x34: inc(registers.whole.HL); break;
+
+            //dec 8bit
+            case 0x3D: dec(registers::half_register_name::A); break;
+            case 0x05: dec(registers::half_register_name::B); break;
+            case 0x0D: dec(registers::half_register_name::C); break;
+            case 0x15: dec(registers::half_register_name::D); break;
+            case 0x1D: dec(registers::half_register_name::E); break;
+            case 0x25: dec(registers::half_register_name::H); break;
+            case 0x2D: dec(registers::half_register_name::L); break;
+            case 0x35: dec(registers.whole.HL); break;
+
+            //inc 16bit
+            case 0x03: inc(registers::whole_register_name::BC); break;
+            case 0x13: inc(registers::whole_register_name::DE); break;
+            case 0x23: inc(registers::whole_register_name::HL); break;
+            case 0x33: inc(registers::whole_register_name::SP); break;
+
+            //dec 16bit
+            case 0x0B: dec(registers::whole_register_name::BC); break;
+            case 0x1B: dec(registers::whole_register_name::DE); break;
+            case 0x2B: dec(registers::whole_register_name::HL); break;
+            case 0x3B: dec(registers::whole_register_name::SP); break;
         }
+
+        prefetch_next_instruction();
     }
 }

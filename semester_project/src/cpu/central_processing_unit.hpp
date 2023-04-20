@@ -90,13 +90,25 @@ namespace central_processing_unit {
         void add(byte value, bool carry = 0);
         void sub(byte value, bool carry = 0);
 
+        // Always adds value to HL
+        void add16(word value);
+        void add_to_sp(byte value);
+
         void and_(byte value);
         void or_(byte value);
         void xor_(byte value);
 
         void cp(byte value);
-    };
 
+        byte shared_inc_dec(byte value, byte offset);
+        void inc(registers::half_register_name target_register);
+        void inc(word target_address);
+        void inc(registers::whole_register_name target_register);
+
+        void dec(registers::half_register_name target_register);
+        void dec(word target_address);
+        void dec(registers::whole_register_name target_register);
+    };
 }
 
 #endif //SEMESTER_PROJECT_CENTRAL_PROCESSING_UNIT_HPP
