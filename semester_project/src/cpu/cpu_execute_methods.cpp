@@ -16,7 +16,7 @@ namespace central_processing_unit {
     }
 
     void cpu::load(word target_address, byte value) {
-        write_byte_to_memory(target_address, value);
+        write_byte(target_address, value);
     }
 
     void cpu::pop(registers::whole_register_name target_register) {
@@ -46,18 +46,18 @@ namespace central_processing_unit {
 
         registers.write_subtract_flag(0);
         registers.write_half_carry_flag((registers.whole.HL & 0xFFF) + (value & 0xFFF) & 0x1000 != 0);
-        registers.write_carry_flag((dword)registers.whole.HL + (dword)value + carry > 0xFFFF);
+        registers.write_carry_flag((dword)registers.whole.HL + (dword)value > 0xFFFF);
 
         run_phantom_cycle();
     }
 
-    void cpu::add_to_sp(byte value) {
+    word cpu::add_to_sp(byte value) {
         word result = registers.whole.SP + value;
 
         registers.write_zero_flag(0);
         registers.write_subtract_flag(0);
         registers.write_half_carry_flag((registers.whole.HL & 0xFFF) + (value & 0xFFF) & 0x1000 != 0);
-        registers.write_carry_flag((dword)registers.whole.HL + (dword)value + carry > 0xFFFF);
+        registers.write_carry_flag((dword)registers.whole.HL + (dword)value > 0xFFFF);
 
         // Not sure if correct order but nothing can access SP (i think) during this cycle anyway
         run_phantom_cycle();
@@ -128,10 +128,10 @@ namespace central_processing_unit {
     }
 
     void cpu::inc(word target_address) {
-        byte value = read_byte_from_memory(target_address);
+        byte value = read_byte(target_address);
 
         byte result = shared_inc_dec(value, 1);
-        write_byte_to_memory(target_address, result);
+        write_byte(target_address, result);
     }
 
     // for some reason this does not affect any flags
@@ -152,10 +152,10 @@ namespace central_processing_unit {
     }
 
     void cpu::dec(word target_address) {
-        byte value = read_byte_from_memory(target_address);
+        byte value = read_byte(target_address);
 
         byte result = shared_inc_dec(value, -1);
-        write_byte_to_memory(target_address, result);
+        write_byte(target_address, result);
     }
 
     void cpu::dec(registers::whole_register_name target_register) {

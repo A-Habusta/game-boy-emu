@@ -127,7 +127,7 @@ namespace central_processing_unit {
 
             //TODO
             //load HL <- SP + immediate
-            case 0xF8: load(registers::whole_register_name::HL, add_to_sp(read_byte_at_program_counter_with_increment)); break;
+            case 0xF8: load(registers::whole_register_name::HL, add_to_sp(read_byte_at_pc_with_increment())); break;
 
             //pop
             case 0xC1: pop(registers::whole_register_name::BC); break;
@@ -161,7 +161,7 @@ namespace central_processing_unit {
 
             //add16  SP + immediate
             // mildly cursed
-            case 0xE8: registers.whole.SP = add_to_sp(read_byte_at_pc_with_increment); run_phantom_cycle(); break;
+            case 0xE8: registers.whole.SP = add_to_sp(read_byte_at_pc_with_increment()); run_phantom_cycle(); break;
 
             //adc
             case 0x8F: add(registers.half.A, registers.read_carry_flag()); break;
@@ -192,7 +192,7 @@ namespace central_processing_unit {
             case 0x9A: sub(registers.half.D, registers.read_carry_flag()); break;
             case 0x9B: sub(registers.half.E, registers.read_carry_flag()); break;
             case 0x9C: sub(registers.half.H, registers.read_carry_flag()); break;
-            case 0x9C: sub(registers.half.L, registers.read_carry_flag()); break;
+            case 0x9D: sub(registers.half.L, registers.read_carry_flag()); break;
             case 0x9E: sub(read_byte(registers.whole.HL), registers.read_carry_flag()); break;
             case 0xDE: sub(read_byte_at_pc_with_increment(), registers.read_carry_flag()); break;
 

@@ -55,13 +55,13 @@ namespace central_processing_unit {
             return utility::get_word_from_byte(low, high);
         }
 
-        void write_byte_to_memory(word address, byte value) { memory.write_with_cycling(address, value); }
+        void write_byte(word address, byte value) { memory.write_with_cycling(address, value); }
         void write_word_to_memory(word address, word value) {
-            write_byte_to_memory(address, utility::get_low_byte(value));
-            write_byte_to_memory(address + 1, utility::get_high_byte(value));
+            write_byte(address, utility::get_low_byte(value));
+            write_byte(address + 1, utility::get_high_byte(value));
         }
 
-        void push_byte_to_stack(byte value) { write_byte_to_memory(--registers.whole.SP, value); }
+        void push_byte_to_stack(byte value) { write_byte(--registers.whole.SP, value); }
         void push_word_to_stack(word value) {
             push_byte_to_stack(utility::get_high_byte(value));
             push_byte_to_stack(utility::get_low_byte(value));
@@ -92,7 +92,7 @@ namespace central_processing_unit {
 
         // Always adds value to HL
         void add16(word value);
-        void add_to_sp(byte value);
+        word add_to_sp(byte value);
 
         void and_(byte value);
         void or_(byte value);
