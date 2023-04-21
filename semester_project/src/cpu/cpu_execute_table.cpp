@@ -8,9 +8,8 @@
 
 namespace central_processing_unit {
     void cpu::execute_instruction() {
-        if (queued_ime_enable) {
-            enable_interrupts();
-        }
+        // I am hoping that this is compiled into a jump table instead of an if-else cascade, since this is a pretty
+        // simple and readable way of doing this.
         switch(cached_instruction) {
             //load register8 <- immediate
             case 0x3E: load(registers::half_register_name::A, read_byte_at_pc_with_increment()); break;
@@ -162,7 +161,6 @@ namespace central_processing_unit {
             case 0x39: add16(registers.whole.SP); break;
 
             //add16  SP + immediate
-            // mildly cursed
             case 0xE8: registers.whole.SP = add_to_sp(read_byte_at_pc_with_increment()); run_phantom_cycle(); break;
 
             //adc
@@ -340,14 +338,11 @@ namespace central_processing_unit {
             //rra
             case 0x1F: rotate_a_right(registers.read_carry_flag()); break;
         }
-
-        prefetch_next_instruction();
     }
 
     void cpu::execute_cb_prefixed_instruction() {
         byte instruction = read_byte_at_pc_with_increment();
-        // FIXME: this is a bit of a mess, since there is a pattern here, but I don't know how to handle the indirect
-        // addressing instructions cleanly right now
+        // FIXME: Should be changed into an explicit table, since there is a clear pattern
         switch(instruction) {
             //rlc
             case 0x07: rlc(registers::half_register_name::A); break;

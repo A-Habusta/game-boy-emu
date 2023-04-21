@@ -13,27 +13,31 @@
 // TODO: actually create this
 class emulator {};
 struct emulatorDelegate {
-    emulatorDelegate(emulator& emulator) : emu(emulator) {}
-    void operator()() { (emu.*method)(); }
 private:
     using emulatorMethod = void(emulator::*)();
     emulator& emu;
     emulatorMethod method;
+public:
+    emulatorDelegate(emulator& emulator, emulatorMethod method) : emu(emulator), method(method) {}
+    void operator()() { (emu.*method)(); }
 };
 
 namespace central_processing_unit {
 
     constexpr int HIGH_PAGE = 0xFF00;
-
+    constexpr word interrupt_jump_targets[] = { 0x40, 0x48, 0x50, 0x58, 0x60 };
+    constexpr int interrupt_types_count = 5;
 
     class cpu {
     public:
         void reset();
-        void execute_instruction();
+        void execute();
     private:
         registers::register_file registers;
         memory::memory_map memory;
         byte cached_instruction;
+
+        void execute_instruction();
 
         emulatorDelegate run_phantom_cycle;
         bool interrupt_master_enable = false;
@@ -41,9 +45,20 @@ namespace central_processing_unit {
 
         void prefetch_next_instruction();
 
+        // Not class so we can easily use it as a number
+        enum interrupt_type {
+            NONE = -1,
+            VBLANK = 0,
+            LCD_STAT = 1,
+            TIMER = 2,
+            SERIAL = 3,
+            JOYPAD = 4,
+        };
         void enable_interrupts();
         void disable_interrupts();
 
+        interrupt_type check_for_interrupts();
+        void handle_interrupts(interrupt_type);
         //
         // Memory access methods
         //
@@ -78,6 +93,11 @@ namespace central_processing_unit {
             byte high = pop_byte_from_stack();
             return utility::get_word_from_byte(low, high);
         }
+
+        // TODO: Create these methods once memory is implemented
+        // raw in this context means without performing a cycle
+        byte read_interrupt_requested_register_raw() { return 0; }
+        byte read_interrupt_enable_register_raw() { return 0; }
         //
         // End of memory access methods
         //
@@ -140,12 +160,6 @@ namespace central_processing_unit {
         // Helper functions
         byte shared_shift_in_value_left(byte value, bool bit);
         byte shared_shift_in_value_right(byte value, bool bit);
-
-        void rotate_right(registers::half_register_name target_register, bool added_bit);
-        void rotate_right(word target_address, bool added_bit);
-
-        void rotate_left(registers::half_register_name target_register, bool added_bit);
-        void rotate_left(word target_address, bool added_bit);
 
 
         void rotate_a_right(bool added_bit);
