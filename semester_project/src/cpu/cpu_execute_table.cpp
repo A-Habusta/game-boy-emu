@@ -7,10 +7,10 @@
 #include "../utility.hpp"
 
 namespace central_processing_unit {
-    void cpu::execute_instruction() {
+    void cpu::execute_instruction(byte instruction) {
         // I am hoping that this is compiled into a jump table instead of an if-else cascade, since this is a pretty
         // simple and readable way of doing this.
-        switch(cached_instruction) {
+        switch(instruction) {
             //load register8 <- immediate
             case 0x3E: load(registers::half_register_name::A, read_byte_at_pc_with_increment()); break;
             case 0x06: load(registers::half_register_name::B, read_byte_at_pc_with_increment()); break;
@@ -337,6 +337,9 @@ namespace central_processing_unit {
             case 0x0F: rotate_a_right(utility::get_bit(registers.half.A, 0)); break;
             //rra
             case 0x1F: rotate_a_right(registers.read_carry_flag()); break;
+
+            // unknown
+            default: handle_unknown_instruction(); break;
         }
     }
 
@@ -642,6 +645,9 @@ namespace central_processing_unit {
             case 0xFC: set(7, registers::half_register_name::H); break;
             case 0xFD: set(7, registers::half_register_name::L); break;
             case 0xFE: set(7, registers.whole.HL); break;
+
+            // Will never occur since every possible byte is exhausted
+            default: break;
         }
     }
 }

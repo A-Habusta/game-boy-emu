@@ -179,6 +179,7 @@ namespace central_processing_unit {
         registers.write_half_carry_flag(1);
     }
 
+    // TODO
     void cpu::daa() {
 
     }
@@ -230,8 +231,14 @@ namespace central_processing_unit {
     }
 
 
-    void cpu::stop() {}
-    void cpu::halt() {}
+    void cpu::stop() { throw emulator::stop{}; }
+    void cpu::halt() {
+        current_state = state::halt_preparation;
+    }
+
+    void cpu::handle_unknown_instruction() {
+        crash();
+    }
 
     byte cpu::shared_shift_in_value_left(byte value, bool bit) {
         byte result = value << 1 | bit;
@@ -268,7 +275,7 @@ namespace central_processing_unit {
     }
 
 
-    // TODO: Condense these methods
+    // FIXME: Condense these methods
     void cpu::rlc(registers::half_register_name target_register) {
         byte value = registers.read_from_register(target_register);
 

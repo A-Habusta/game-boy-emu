@@ -11,7 +11,10 @@
 #include "registers.hpp"
 
 // TODO: actually create this
-class emulator {};
+class emulator {
+public:
+    class stop{};
+};
 struct emulatorDelegate {
 private:
     using emulatorMethod = void(emulator::*)();
@@ -23,7 +26,6 @@ public:
 };
 
 namespace central_processing_unit {
-
     constexpr int HIGH_PAGE = 0xFF00;
     constexpr word interrupt_jump_targets[] = { 0x40, 0x48, 0x50, 0x58, 0x60 };
     constexpr int interrupt_types_count = 5;
@@ -32,20 +34,46 @@ namespace central_processing_unit {
     public:
         void reset();
         void execute();
+
+        // Used in memory
+        byte get_interrupt_enable_register() const { return interrupt_enable_register; }
+        void set_interrupt_enable_register(const byte value)  { interrupt_enable_register = value; }
+
+        byte get_interrupt_requested_register() const { return interrupt_requested_register; }
+        void set_interrupt_requested_register(const byte value) { interrupt_requested_register = value; }
+
     private:
         registers::register_file registers;
         memory::memory_map memory;
         byte cached_instruction;
 
-        void execute_instruction();
-
         emulatorDelegate run_phantom_cycle;
         bool interrupt_master_enable = false;
         bool queued_ime_enable = false;
 
+        byte interrupt_enable_register;
+        byte interrupt_requested_register;
+
+        enum class state {
+            running,
+            halt_preparation,
+            halted,
+            crashed
+        };
+
+        state current_state = state::running;
+
+        void crash() { current_state = state::crashed; };
+
+        void execute_running_state();
+        void execute_halt_preparation();
+        void execute_halted_state();
+        void execute_crashed_state();
+
+        void execute_instruction(byte instruction);
         void prefetch_next_instruction();
 
-        // Not class so we can easily use it as a number
+        // Not class so that we can easily use it as a number
         enum interrupt_type {
             NONE = -1,
             VBLANK = 0,
@@ -54,10 +82,12 @@ namespace central_processing_unit {
             SERIAL = 3,
             JOYPAD = 4,
         };
+
         void enable_interrupts();
         void disable_interrupts();
 
         interrupt_type check_for_interrupts();
+        void acknowledge_interrupt(interrupt_type);
         void handle_interrupts(interrupt_type);
         //
         // Memory access methods
@@ -94,10 +124,6 @@ namespace central_processing_unit {
             return utility::get_word_from_byte(low, high);
         }
 
-        // TODO: Create these methods once memory is implemented
-        // raw in this context means without performing a cycle
-        byte read_interrupt_requested_register_raw() { return 0; }
-        byte read_interrupt_enable_register_raw() { return 0; }
         //
         // End of memory access methods
         //
@@ -155,12 +181,12 @@ namespace central_processing_unit {
 
         void execute_cb_prefixed_instruction();
 
+        void handle_unknown_instruction();
+
         //CB instructions and bitwise shifts
 
-        // Helper functions
         byte shared_shift_in_value_left(byte value, bool bit);
         byte shared_shift_in_value_right(byte value, bool bit);
-
 
         void rotate_a_right(bool added_bit);
         void rotate_a_left(bool added_bit);
