@@ -6,24 +6,11 @@
 #ifndef SEMESTER_PROJECT_CENTRAL_PROCESSING_UNIT_HPP
 #define SEMESTER_PROJECT_CENTRAL_PROCESSING_UNIT_HPP
 
+#include <functional>
+
 #include "../memory.hpp"
 #include "../utility.hpp"
 #include "registers.hpp"
-
-// TODO: actually create this
-class emulator {
-public:
-    class stop{};
-};
-struct emulatorDelegate {
-private:
-    using emulatorMethod = void(emulator::*)();
-    emulator& emu;
-    emulatorMethod method;
-public:
-    emulatorDelegate(emulator& emulator, emulatorMethod method) : emu(emulator), method(method) {}
-    void operator()() { (emu.*method)(); }
-};
 
 namespace central_processing_unit {
     constexpr int HIGH_PAGE = 0xFF00;
@@ -35,24 +22,21 @@ namespace central_processing_unit {
         void reset();
         void execute();
 
-        // Used in memory
-        byte get_interrupt_enable_register() const { return interrupt_enable_register; }
-        void set_interrupt_enable_register(const byte value)  { interrupt_enable_register = value; }
+        byte interrupt_enable_register;
+        byte interrupt_requested_register;
 
-        byte get_interrupt_requested_register() const { return interrupt_requested_register; }
-        void set_interrupt_requested_register(const byte value) { interrupt_requested_register = value; }
+        void set_phantom_cycle_callback(std::function<void()> phantom_cycle_callback) {
+            run_phantom_cycle = phantom_cycle_callback;
+        }
 
     private:
         registers::register_file registers;
         memory::memory_map memory;
         byte cached_instruction;
 
-        emulatorDelegate run_phantom_cycle;
+        std::function<void()> run_phantom_cycle;
         bool interrupt_master_enable = false;
         bool queued_ime_enable = false;
-
-        byte interrupt_enable_register;
-        byte interrupt_requested_register;
 
         enum class state {
             running,

@@ -4,6 +4,7 @@
 //
 
 #include "central_processing_unit.hpp"
+#include "../emulator.hpp"
 #include "../utility.hpp"
 
 namespace central_processing_unit {
