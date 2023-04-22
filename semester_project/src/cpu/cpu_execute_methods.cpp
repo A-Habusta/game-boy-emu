@@ -179,9 +179,33 @@ namespace central_processing_unit {
         registers.write_half_carry_flag(1);
     }
 
-    // TODO
+    // TODO: Check if this is correct
     void cpu::daa() {
+        bool carry = false;
+        byte correction = 0;
 
+        if (!registers.read_subtract_flag()) {
+            if (registers.read_carry_flag() || registers.half.A > 0x99) {
+                carry = true;
+                correction |= 0x60;
+            }
+            if (registers.read_half_carry_flag() || registers.half.A & 0x0F > 0x09) {
+                correction |= 0x06;
+            }
+        }
+        else if (registers.read_carry_flag()) {
+            carry = true;
+            correction = registers.read_half_carry_flag() ? 0x9A : 0xA0;
+        }
+        else if (registers.read_half_carry_flag()) {
+            correction = 0xFA;
+        }
+
+        registers.half.A += correction;
+
+        registers.write_zero_flag(registers.half.A == 0);
+        registers.write_half_carry_flag(0);
+        registers.write_carry_flag(carry);
     }
 
     void cpu::jump_hl() {
