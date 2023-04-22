@@ -19,7 +19,7 @@ namespace central_processing_unit {
         interrupt_enable_register = 0;
         interrupt_requested_register = 0;
 
-        // TODO: This needs to be changed because prefetch emulates a machine cycle and we don't want that
+        // Reset should actually perform one M cycle
         prefetch_next_instruction();
     }
 
