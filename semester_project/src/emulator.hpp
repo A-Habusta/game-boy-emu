@@ -6,6 +6,8 @@
 #ifndef SEMESTER_PROJECT_EMULATOR_HPP
 #define SEMESTER_PROJECT_EMULATOR_HPP
 
+#include "utility.hpp"
+
 class emulator {
 public:
     class stop{};

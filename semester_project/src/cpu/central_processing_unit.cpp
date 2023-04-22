@@ -113,11 +113,9 @@ namespace central_processing_unit {
 
         // 1 cycle
         run_phantom_cycle();
-
         // 3 cycles
         word interrupt_handler_address = interrupt_jump_targets[interrupt];
         call(interrupt_handler_address, true);
-
         // 1 cycle
         prefetch_next_instruction();
     }

@@ -29,7 +29,7 @@ namespace utility {
     }
 
     template<typename T>
-    inline constexpr T get_bit(T value, int bit) {
+    inline constexpr bool get_bit(T value, int bit) {
         return (value >> bit) & 1;
     }
 
