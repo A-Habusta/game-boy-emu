@@ -11,11 +11,6 @@
 #include "../utility.hpp"
 
 namespace registers {
-    constexpr int FLAG_ZERO = 7;
-    constexpr int FLAG_SUBTRACT = 6;
-    constexpr int FLAG_HALF_CARRY = 5;
-    constexpr int FLAG_CARRY = 4;
-
     enum class whole_register_name {
         AF, BC, DE, HL, SP, PC
     };
@@ -72,6 +67,13 @@ namespace registers {
         void write_to_register(whole_register_name  register_name, word value);
         byte read_from_register(half_register_name register_name);
         word read_from_register(whole_register_name register_name);
+    private:
+        enum {
+            FLAG_ZERO = 7,
+            FLAG_SUBTRACT = 6,
+            FLAG_HALF_CARRY = 5,
+            FLAG_CARRY = 4
+        };
     };
 }
 
