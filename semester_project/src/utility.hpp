@@ -13,6 +13,8 @@ using word = uint16_t;
 using dword = uint32_t;
 
 namespace utility {
+    constexpr byte UNDEFINED_BYTE = 0xFF;
+
     template<typename T>
     inline constexpr T set_bit(T value, int bit) {
         return value | (1 << bit);
