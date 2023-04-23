@@ -52,7 +52,7 @@ namespace central_processing_unit {
 
     void cpu::execute_halt_preparation() {
         interrupt_type interrupt = check_for_interrupts();
-        if (interrupt == NONE) {
+        if (interrupt == none) {
             run_phantom_cycle();
             current_state = state::halted;
         }
@@ -62,7 +62,7 @@ namespace central_processing_unit {
     };
 
     void cpu::execute_halted_state() {
-        if (check_for_interrupts() != NONE) {
+        if (check_for_interrupts() != none) {
             current_state = state::running;
             return;
         }
@@ -102,11 +102,11 @@ namespace central_processing_unit {
             }
         }
 
-        return NONE;
+        return none;
     }
 
     void cpu::handle_interrupts(interrupt_type interrupt) {
-        if (interrupt == NONE)
+        if (interrupt == none)
             return;
 
         disable_interrupts();

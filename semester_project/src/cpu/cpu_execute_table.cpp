@@ -101,12 +101,12 @@ namespace central_processing_unit {
             case 0x36: load(registers.whole.HL, read_byte_at_pc_with_increment()); break;
 
             //load high page memory <- A
-            case 0xE0: load(HIGH_PAGE | read_byte_at_pc_with_increment(), registers.half.A); break;
-            case 0xE2: load(HIGH_PAGE | read_byte(registers.half.C), registers.half.A); break;
+            case 0xE0: load(high_page | read_byte_at_pc_with_increment(), registers.half.A); break;
+            case 0xE2: load(high_page | read_byte(registers.half.C), registers.half.A); break;
 
             //load A <- high page memory
-            case 0xF0: load(registers::half_register_name::A, read_byte(HIGH_PAGE | read_byte_at_pc_with_increment())); break;
-            case 0xF2: load(registers::half_register_name::A, read_byte(HIGH_PAGE | registers.half.C)); break;
+            case 0xF0: load(registers::half_register_name::A, read_byte(high_page | read_byte_at_pc_with_increment())); break;
+            case 0xF2: load(registers::half_register_name::A, read_byte(high_page | registers.half.C)); break;
 
             //load A <- indirect w inc/dec
             case 0x2A: load(registers::half_register_name::A, read_byte(registers.whole.HL++)); break;

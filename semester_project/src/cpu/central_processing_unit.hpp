@@ -13,7 +13,7 @@
 #include "registers.hpp"
 
 namespace central_processing_unit {
-    constexpr int HIGH_PAGE = 0xFF00;
+    constexpr int high_page = 0xFF00;
     constexpr word interrupt_jump_targets[] = { 0x40, 0x48, 0x50, 0x58, 0x60 };
     constexpr int interrupt_types_count = 5;
 
@@ -59,12 +59,12 @@ namespace central_processing_unit {
 
         // Not class so that we can easily use it as a number
         enum interrupt_type {
-            NONE = -1,
-            VBLANK = 0,
-            LCD_STAT = 1,
-            TIMER = 2,
-            SERIAL = 3,
-            JOYPAD = 4,
+            none = -1,
+            vblank = 0,
+            lcd_stat = 1,
+            timer = 2,
+            serial = 3,
+            joypad = 4,
         };
 
         void enable_interrupts();

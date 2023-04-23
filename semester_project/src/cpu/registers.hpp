@@ -53,15 +53,15 @@ namespace registers {
         whole_registers whole{};
         half_registers_correct_endian half;
 
-        void write_zero_flag(bool value) { half.F = utility::write_bit(half.F, FLAG_ZERO, value); }
-        void write_subtract_flag(bool value) { half.F = utility::write_bit(half.F, FLAG_SUBTRACT, value); }
-        void write_half_carry_flag(bool value) { half.F = utility::write_bit(half.F, FLAG_HALF_CARRY, value); }
-        void write_carry_flag(bool value) { half.F = utility::write_bit(half.F, FLAG_CARRY, value); }
+        void write_zero_flag(bool value) { half.F = utility::write_bit(half.F, zero_flag_pos, value); }
+        void write_subtract_flag(bool value) { half.F = utility::write_bit(half.F, subtract_flag_pos, value); }
+        void write_half_carry_flag(bool value) { half.F = utility::write_bit(half.F, half_carry_flag_pos, value); }
+        void write_carry_flag(bool value) { half.F = utility::write_bit(half.F, carry_flag_pos, value); }
 
-        bool read_zero_flag() { return utility::get_bit(half.F, FLAG_ZERO); }
-        bool read_subtract_flag() { return utility::get_bit(half.F, FLAG_SUBTRACT); }
-        bool read_half_carry_flag() { return utility::get_bit(half.F, FLAG_HALF_CARRY); }
-        bool read_carry_flag() { return utility::get_bit(half.F, FLAG_CARRY); }
+        bool read_zero_flag() { return utility::get_bit(half.F, zero_flag_pos); }
+        bool read_subtract_flag() { return utility::get_bit(half.F, subtract_flag_pos); }
+        bool read_half_carry_flag() { return utility::get_bit(half.F, half_carry_flag_pos); }
+        bool read_carry_flag() { return utility::get_bit(half.F, carry_flag_pos); }
 
         void write_to_register(half_register_name register_name, byte value);
         void write_to_register(whole_register_name  register_name, word value);
@@ -69,10 +69,10 @@ namespace registers {
         word read_from_register(whole_register_name register_name);
     private:
         enum {
-            FLAG_ZERO = 7,
-            FLAG_SUBTRACT = 6,
-            FLAG_HALF_CARRY = 5,
-            FLAG_CARRY = 4
+            zero_flag_pos = 7,
+            subtract_flag_pos = 6,
+            half_carry_flag_pos = 5,
+            carry_flag_pos = 4
         };
     };
 }
