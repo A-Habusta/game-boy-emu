@@ -6,7 +6,9 @@
 #ifndef SEMESTER_PROJECT_PIXEL_PROCESSING_UNIT_HPP
 #define SEMESTER_PROJECT_PIXEL_PROCESSING_UNIT_HPP
 
+#include <functional>
 #include <SDL.h>
+
 #include "../utility.hpp"
 
 namespace pixel_processing_unit {
@@ -19,7 +21,7 @@ namespace pixel_processing_unit {
     constexpr int TILE_BYTES_PER_LINE = 2;
     constexpr int BYTES_PER_TILE = TILE_HEIGHT * TILE_BYTES_PER_LINE;
 
-    constexpr int SPRITE_COUNT = 40;
+    constexpr int OAM_SPRITE_COUNT = 40;
     constexpr int MAX_SPRITES_PER_LINE = 10;
 
     constexpr int VRAM_TILE_AREA_START = 0x0000;
@@ -50,6 +52,11 @@ namespace pixel_processing_unit {
     constexpr int TIMING_MODE_1_CYCLES = TIMING_MODE_1_SCANLINES * TIMING_SCANLINE_CYCLES;
     constexpr int TIMING_MODE_2_CYCLES = 80;
     constexpr int TIMING_MODE_3_MIN_CYCLES = 172;
+    constexpr int TIMING_MODE_0_MAX_CYCLES = TIMING_SCANLINE_CYCLES - TIMING_MODE_1_CYCLES - TIMING_MODE_2_CYCLES -
+            TIMING_MODE_3_MIN_CYCLES;
+
+    constexpr int MAX_SCANLINE = 153;
+    constexpr int LAST_DRAWN_SCANLINE = SCREEN_HEIGHT - 1;
 
 
     struct tile {
@@ -69,9 +76,9 @@ namespace pixel_processing_unit {
         byte tile{};
         byte attributes{};
 
-        enum class size {
-            size8x8,
-            size8x16
+        enum size {
+            size8x8 = 64,
+            size8x16 = 128
         };
 
         bool get_priority_flag() { return utility::get_bit(attributes, PRIORITY_FLAG_POSITION); }
@@ -88,14 +95,12 @@ namespace pixel_processing_unit {
         };
     };
 
-    // Right now in RGB24 format, which is a bit wasteful, but oh well
+    // Right now in ARGB8888 format, which is a bit wasteful, since there are only 4 possible colors
     struct pixel {
         pixel() = default;
-        pixel(uint32_t color) : r(color >> 16), g(color >> 8), b(color) {}
+        pixel(uint32_t color) : color(color) {}
 
-        byte r{};
-        byte g{};
-        byte b{};
+        uint32_t color;
     };
 
     struct palette {
@@ -139,6 +144,16 @@ namespace pixel_processing_unit {
         bool get_obj_display_enable() { return utility::get_bit(lcd_control, LCD_CONTROL_OBJ_DISPLAY_ENABLE_POSITION); }
         bool get_bg_display() { return utility::get_bit(lcd_control, LCD_CONTROL_BG_AND_WINDOW_DISPLAY_POSITION); }
 
+        //LYC == LC
+        bool get_coincidence_flag() { return utility::get_bit(lcd_status, LCD_STATUS_COINCIDENCE_FLAG_POSITION); }
+        void set_coincidence_flag(bool value) { utility::write_bit(lcd_status, LCD_STATUS_COINCIDENCE_FLAG_POSITION,
+                                                                   value); }
+
+        bool get_coincidence_interrupt_flag() { return utility::get_bit(lcd_status, LCD_STATUS_LYC_INTERRUPT_FLAG_POSITION); }
+        bool get_mode_2_oam_interrupt_flag() { return utility::get_bit(lcd_status, LCD_STATUS_MODE_2_OAM_INTERRUPT_FLAG_POSITION); }
+        bool get_mode_1_vblank_interrupt_flag() { return utility::get_bit(lcd_status, LCD_STATUS_MODE_1_VBLANK_INTERRUPT_FLAG_POSITION); }
+        bool get_mode_0_hblank_interrupt_flag() { return utility::get_bit(lcd_status, LCD_STATUS_MODE_0_HBLANK_INTERRUPT_FLAG_POSITION); }
+
     private:
         enum {
             LCD_CONTROL_DISPLAY_ENABLE_POSITION = 7,
@@ -149,6 +164,12 @@ namespace pixel_processing_unit {
             LCD_CONTROL_OBJ_SIZE_POSITION = 2,
             LCD_CONTROL_OBJ_DISPLAY_ENABLE_POSITION = 1,
             LCD_CONTROL_BG_AND_WINDOW_DISPLAY_POSITION = 0,
+
+            LCD_STATUS_LYC_INTERRUPT_FLAG_POSITION = 6,
+            LCD_STATUS_MODE_2_OAM_INTERRUPT_FLAG_POSITION = 5,
+            LCD_STATUS_MODE_1_VBLANK_INTERRUPT_FLAG_POSITION = 4,
+            LCD_STATUS_MODE_0_HBLANK_INTERRUPT_FLAG_POSITION = 3,
+            LCD_STATUS_COINCIDENCE_FLAG_POSITION = 2,
         };
     };
 
@@ -157,9 +178,12 @@ namespace pixel_processing_unit {
         ppu_register_file registers{};
 
         union oam {
-            sprite sprites[SPRITE_COUNT]{};
-            byte bytes[SPRITE_COUNT * sizeof(sprite)];
+            sprite sprites[OAM_SPRITE_COUNT]{};
+            byte bytes[OAM_SPRITE_COUNT * sizeof(sprite)];
         } oam{};
+
+        int sprite_buffer_relevant_index = 0;
+        sprite sprite_buffer[MAX_SPRITES_PER_LINE]{};
 
         union vram {
             struct tile_view {
@@ -188,17 +212,21 @@ namespace pixel_processing_unit {
         SDL_Texture* screen_texture;
         pixel screen_buffer[SCREEN_SIZE]{};
 
-        pixel master_palette[palette::COLOR_COUNT]{ 0x000000, 0x555555, 0xAAAAAA, 0xFFFFFF };
 
+        inline static pixel master_palette[palette::COLOR_COUNT]{ 0xFF000000, 0xFF555555, 0xFFAAAAAA, 0xFFFFFFFF };
+
+        bool power = true;
         int t_cycles = 0;
 
         enum mode {
-            OFF = 0xFF,
             OAM_SEARCH = 2,
             PIXEL_TRANSFER = 3,
             H_BLANK = 0,
             V_BLANK = 1
-        } current_mode = mode::OFF;
+        } current_mode = mode::H_BLANK;
+
+        interrupt_callback request_interrupt;
+
 
         tile get_tile_from_oam_index(byte offset) {
             return vram.tile_view.get_tile_method_8000(offset);
@@ -217,18 +245,85 @@ namespace pixel_processing_unit {
             return current_mode == mode::PIXEL_TRANSFER || current_mode == mode::OAM_SEARCH;
         }
 
+
         pixel get_pixel_color_from_palette(palette palette, byte color_index) {
             byte master_color_index = palette.get_master_color_index(color_index);
             return master_palette[master_color_index];
         }
 
-        void run_t_cycle();
-        void push_pixel_to_screen_buffer(int x, int y, pixel pixel_color);
 
+        void set_mode_flag_to_current_mode() {
+            byte mode_flag = (byte) current_mode;
+            registers.lcd_status &= 0xFC;
+            registers.lcd_status |= mode_flag;
+        }
+
+        // Inaccurate. The interrupt logic is a bit finicky and not supporting it perfectly affects only a few games.
+        void request_mode_change_interrupt(mode new_mode);
+
+        void change_mode(mode new_mode) {
+            current_mode = new_mode;
+            request_mode_change_interrupt(new_mode);
+
+            set_mode_flag_to_current_mode();
+            t_cycles = 0;
+        }
+
+        void power_off() {
+            power = false;
+            reset_lcd_y();
+
+            render_blank_screen();
+        }
+
+        void power_on() {
+            power = true;
+            change_mode(mode::H_BLANK);
+        }
+
+        void increment_lcd_y() {
+            registers.lcd_y = (registers.lcd_y + 1) % (MAX_SCANLINE + 1);
+
+            bool compare = registers.lcd_y == registers.lcd_y_compare;
+            registers.set_coincidence_flag(compare);
+
+            if (compare && registers.get_coincidence_interrupt_flag()) {
+                request_interrupt();
+            }
+        }
+
+        void reset_lcd_y() {
+            registers.lcd_y = 0;
+        }
+
+        void run_t_cycle();
+        void run_oam_search_t_cycle();
+        void run_pixel_transfer_t_cycle();
+        void run_h_blank_t_cycle();
+        void run_v_blank_t_cycle();
+
+        void populate_sprite_buffer_for_current_line();
+        // Rendering to screen buffer
+        void render_pixel_to_buffer(int relative_pixel_x, int relative_pixel_y);
+
+        pixel get_sprite_layer_pixel(int relative_pixel_x, int relative_pixel_y);
+        pixel get_window_layer_pixel(int relative_pixel_x, int relative_pixel_y);
+        pixel get_background_layer_pixel(int absolute_pixel_x, int absolute_pixel_y);
+
+        void push_pixel_to_screen_buffer(int x, int y, pixel pixel) {
+            int index = y * SCREEN_WIDTH + x;
+            screen_buffer[index] = pixel;
+        }
+
+        // Rendering to actual screen
         void flush_buffer_to_texture();
         void render_screen_buffer();
+
+        // NOT accurate, the original game boy is supposed to have a black line in the middle of the screen
+        void render_blank_screen();
+
     public:
-        ppu(SDL_Renderer* renderer);
+        ppu(SDL_Renderer* renderer, interrupt_callback interrupt);
         void run_m_cycle();
         // Memory map instructions
         byte read_vram_generic(word address);

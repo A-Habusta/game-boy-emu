@@ -5,6 +5,7 @@
 #include "hardware/pixel_processing_unit.hpp"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << sizeof(pixel_processing_unit::pixel) << ' ' << SDL_GetPixelFormatName(SDL_PIXELFORMAT_ARGB32) <<
+    std::endl;
     return 0;
 }

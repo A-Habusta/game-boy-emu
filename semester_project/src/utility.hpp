@@ -7,6 +7,9 @@
 #define SEMESTER_PROJECT_UTILITY_HPP
 
 #include <cstdint>
+#include <functional>
+
+using interrupt_callback = std::function<void()>;
 
 using byte = uint8_t;
 using word = uint16_t;
