@@ -9,14 +9,12 @@
 #include <cstdint>
 #include <functional>
 
-using interrupt_callback = std::function<void()>;
-
 using byte = uint8_t;
 using word = uint16_t;
 using dword = uint32_t;
 
 namespace utility {
-    constexpr byte UNDEFINED_BYTE = 0xFF;
+    constexpr byte undefined_byte = 0xFF;
 
     template<typename T>
     inline constexpr T set_bit(T value, int bit) {

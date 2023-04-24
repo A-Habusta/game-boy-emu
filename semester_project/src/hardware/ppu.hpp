@@ -6,48 +6,63 @@
 #ifndef SEMESTER_PROJECT_PPU_HPP
 #define SEMESTER_PROJECT_PPU_HPP
 
-#include "../utility.hpp"
+#include <functional>
+#include <cstring>
+#include <SDL.h>
+
+#include "ppu_data.hpp"
 
 namespace ppu {
-    namespace {
-        struct sprite {
-            bool get_priority() const { return get_attribute(priority_flag_position); }
-            bool get_y_flip() const { return get_attribute(y_flip_flag_position); }
-            bool get_x_flip() const { return get_attribute(x_flip_flag_position); }
-            // There are only two palettes, so we can use a single bit
-            bool get_palette_number() const { return get_attribute(palette_number_position); }
+    constexpr int screen_pixel_width = 160;
+    constexpr int screen_pixel_height = 144;
 
-            enum size {
-                size8x8 = 0,
-                size8x16 = 1
-            };
+    class ppu_renderer {
+        SDL_Renderer *renderer;
+        SDL_Texture *texture;
 
-        private:
-            static constexpr int x_offset = 8;
-            static constexpr int y_offset = 16;
+        palette::real_pixel_type screen_buffer[screen_pixel_height][screen_pixel_width];
 
-            // data can be private, since the PPU only reads this
-            byte y;
-            byte x;
-            byte tile;
-            byte attributes;
+        void push_buffer_to_texture() {
+            palette::real_pixel_type *pixels;
+            int discard;
 
-            enum {
-                priority_flag_position = 7,
-                y_flip_flag_position = 6,
-                x_flip_flag_position = 5,
-                palette_number_position = 4,
-            };
+            SDL_LockTexture(texture, nullptr, (void**)(&pixels), &discard);
+            memcpy(pixels, screen_buffer, sizeof(screen_buffer));
+            SDL_UnlockTexture(texture);
+        }
+    public:
+        ppu_renderer(SDL_Renderer *renderer) : renderer(renderer) {
+            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+                                        screen_pixel_width, screen_pixel_height);
+        }
 
-            bool get_attribute(int flag_position) const {
-                return utility::get_bit(attributes, flag_position);
-            }
-        };
+        void save_pixel(int x, int y, palette::real_pixel_type color) {
+            screen_buffer[y][x] = color;
+        }
 
-        struct tile {
+        void render_frame() {
+            SDL_RenderClear(renderer);
 
-        };
-    }
+            push_buffer_to_texture();
+            SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+
+            SDL_RenderPresent(renderer);
+        }
+        void render_blank_frame() {
+            SDL_RenderClear(renderer);
+            SDL_RenderPresent(renderer);
+        }
+    };
+
+    class ppu {
+        ppu_renderer renderer;
+        register_file registers;
+
+        vram_struct vram;
+        oam_struct oam;
+    public:
+        ppu(SDL_Renderer *renderer) : renderer(renderer) {}
+    };
 }
 
 #endif //SEMESTER_PROJECT_PPU_HPP
