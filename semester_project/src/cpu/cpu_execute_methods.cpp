@@ -36,7 +36,7 @@ namespace central_processing_unit {
 
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(0);
-        registers.write_half_carry_flag((registers.half.A & 0xF) + (value & 0xF) + carry & 0x10 != 0);
+        registers.write_half_carry_flag((((registers.half.A & 0xF) + (value & 0xF) + carry) & 0x10) != 0);
         registers.write_carry_flag((word)registers.half.A + (word)value + carry > 0xFF);
     }
 
@@ -46,7 +46,7 @@ namespace central_processing_unit {
         registers.whole.HL = result;
 
         registers.write_subtract_flag(0);
-        registers.write_half_carry_flag((registers.whole.HL & 0xFFF) + (value & 0xFFF) & 0x1000 != 0);
+        registers.write_half_carry_flag((((registers.whole.HL & 0xFFF) + (value & 0xFFF)) & 0x1000) != 0);
         registers.write_carry_flag((dword)registers.whole.HL + (dword)value > 0xFFFF);
 
         run_phantom_cycle();
@@ -57,7 +57,7 @@ namespace central_processing_unit {
 
         registers.write_zero_flag(0);
         registers.write_subtract_flag(0);
-        registers.write_half_carry_flag((registers.whole.HL & 0xFFF) + (value & 0xFFF) & 0x1000 != 0);
+        registers.write_half_carry_flag((((registers.whole.HL & 0xFFF) + (value & 0xFFF)) & 0x1000) != 0);
         registers.write_carry_flag((dword)registers.whole.HL + (dword)value > 0xFFFF);
 
         // Not sure if correct order but nothing can access SP (I think) during this cycle anyway
@@ -72,7 +72,7 @@ namespace central_processing_unit {
 
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(1);
-        registers.write_half_carry_flag((registers.half.A & 0xF) - (value & 0xF) - carry & 0x10 != 0);
+        registers.write_half_carry_flag((((registers.half.A & 0xF) - (value & 0xF) - carry) & 0x10) != 0);
         registers.write_carry_flag((word)registers.half.A - (word)value - carry > 0xFF);
     }
 
@@ -116,7 +116,7 @@ namespace central_processing_unit {
 
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(0);
-        registers.write_half_carry_flag((value & 0xF) + offset & 0x10 != 0);
+        registers.write_half_carry_flag((((value & 0xF) + offset) & 0x10) != 0);
 
         return result;
     }
@@ -180,7 +180,7 @@ namespace central_processing_unit {
         registers.write_half_carry_flag(1);
     }
 
-    // TODO: Check if this is correct
+    // TODO: Test this somehow
     void cpu::daa() {
         bool carry = false;
         byte correction = 0;
@@ -190,7 +190,7 @@ namespace central_processing_unit {
                 carry = true;
                 correction |= 0x60;
             }
-            if (registers.read_half_carry_flag() || registers.half.A & 0x0F > 0x09) {
+            if (registers.read_half_carry_flag() || (registers.half.A & 0x0F) > 0x09) {
                 correction |= 0x06;
             }
         }
@@ -271,7 +271,7 @@ namespace central_processing_unit {
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(0);
         registers.write_half_carry_flag(0);
-        registers.write_carry_flag(value & 0x80 != 0);
+        registers.write_carry_flag((value & 0x80) != 0);
 
         return result;
     }
@@ -282,7 +282,7 @@ namespace central_processing_unit {
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(0);
         registers.write_half_carry_flag(0);
-        registers.write_carry_flag(value & 0x01 != 0);
+        registers.write_carry_flag((value & 0x01) != 0);
 
         return result;
     }

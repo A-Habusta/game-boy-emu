@@ -3,8 +3,8 @@
 // Created by Adrian Habusta on 22.04.2023
 //
 
-#include "emulator.hpp"
-
-
-//TODO
-void emulator::run_cycle() {}
+void emulator::run_cycle() {
+    ppu.run_m_cycle();
+    apu.run_m_cycle();
+    timer.run_m_cycle();
+}

@@ -6,7 +6,6 @@
 #include "memory.hpp"
 
 byte memory::memory_map::read_with_cycling(word address) {
-    return 0;
 }
 
 void memory::memory_map::write_with_cycling(word address, byte value) {
