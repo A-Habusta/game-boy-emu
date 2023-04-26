@@ -5,8 +5,7 @@
 
 #include "memory.hpp"
 
-byte memory::memory_map::read_with_cycling(word address) {
-}
-
-void memory::memory_map::write_with_cycling(word address, byte value) {
+namespace memory {
+    byte memory_map::read_with_cycling(word address);
+    void memory_map::write_with_cycling(word address, byte value);
 }

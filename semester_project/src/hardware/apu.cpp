@@ -5,6 +5,7 @@
 
 #include "apu.hpp"
 
+// This is here symbolically, it will probably not be implemented
 namespace apu {
     void apu::run_cycle() {
         return;

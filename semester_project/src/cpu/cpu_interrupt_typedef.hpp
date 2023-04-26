@@ -8,6 +8,6 @@
 
 #include <functional>
 
-using interrupt_handler = std::function<void()>;
+using interrupt_callback = std::function<void()>;
 
 #endif //SEMESTER_PROJECT_CPU_INTERRUPT_TYPEDEF_HPP

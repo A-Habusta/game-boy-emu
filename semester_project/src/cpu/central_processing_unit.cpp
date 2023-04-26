@@ -120,6 +120,10 @@ namespace central_processing_unit {
         prefetch_next_instruction();
     }
 
+    void cpu::request_interrupt(interrupt_type interrupt) {
+        interrupt_requested_register = utility::set_bit(interrupt_requested_register, interrupt);
+    }
+
     void cpu::acknowledge_interrupt(interrupt_type interrupt) {
         interrupt_requested_register = utility::clear_bit(interrupt_requested_register, interrupt);
     }

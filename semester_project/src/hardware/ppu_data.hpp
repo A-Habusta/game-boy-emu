@@ -11,7 +11,7 @@
 
 #include "../utility.hpp"
 
-namespace ppu {
+namespace pixel_processing_unit {
     // These struct act as a wrapper for raw VRAM/OAM data to make it easier to work with
     // A palette is basically a conversion table between 2-bit internal game boy colors and colors we draw to the
     // screen

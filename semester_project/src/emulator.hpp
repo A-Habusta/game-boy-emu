@@ -10,20 +10,22 @@
 #include "hardware/timer.hpp"
 #include "hardware/ppu.hpp"
 #include "hardware/apu.hpp"
-#include "emulator.hpp"
 #include "memory.hpp"
 #include "utility.hpp"
 
 class emulator {
-    memory::memory_map memory;
     central_processing_unit::cpu cpu;
-    ppu::ppu ppu;
+    memory::memory_map memory;
+    timer timer;
+    pixel_processing_unit::ppu ppu;
     apu::apu apu;
 
     bool running = true;
 private:
 
 public:
+    emulator();
+
     class stop{};
     void run_cycle();
 };

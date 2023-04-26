@@ -1,11 +1,11 @@
-// File: ppu.cpp
+// File: pixel_processing_unit.cpp
 //
 // Created by Adrian Habusta on 24.04.2023
 //
 
 #include "ppu.hpp"
 
-namespace ppu {
+namespace pixel_processing_unit {
     void ppu::run_m_cycle() {
         if (!is_powered_on)
             return;
@@ -44,7 +44,7 @@ namespace ppu {
     void ppu::run_pixel_transfer_t_cycle() {
         int current_x = t_cycles_per_pixel_transfer  - remaining_t_cycles;
 
-        if (current_x >= screen_width)
+        if (current_x >= screen_pixel_width)
             return;
 
         // TODO:
@@ -68,12 +68,12 @@ namespace ppu {
     }
 
 
-    std::optional<palette::pixel> get_pixel_from_sprite(int x, sprite current_sprite, sprite::size sprite_size {
+    palette::pixel ppu::get_pixel_from_sprite(int x, sprite current_sprite, sprite::size sprite_size) {
         int sprite_width = sprite::width;
         int sprite_height = sprite::get_height_from_size(sprite_size);
 
-        int sprite_x = x - current_sprite.x;
-        int sprite_y = registers.lcd_y - current_sprite.y;
+        int sprite_x = x - current_sprite.get_corrected_x();
+        int sprite_y = registers.lcd_y - current_sprite.get_corrected_y();
 
 
         if (current_sprite.get_x_flip())
@@ -122,16 +122,18 @@ namespace ppu {
         switch (new_mode) {
 
             case mode::v_blank:
+                // always request vblank interrupt
+                request_v_blank_interrupt();
                 if (registers.get_v_blank_interrupt_enable())
-                    request_cpu_interrupt();
-                [[fallthrough]];
+                    request_stat_interrupt();
+                break;
             case mode::oam_search:
                 if (registers.get_oam_interrupt_enable())
-                    request_cpu_interrupt();
+                    request_stat_interrupt();
                 break;
             case mode::h_blank:
                 if (registers.get_h_blank_interrupt_enable())
-                    request_cpu_interrupt();
+                    request_stat_interrupt();
                 break;
 
             default: break;
@@ -146,7 +148,7 @@ namespace ppu {
         registers.write_coincidence_flag(coincidence);
 
         if (coincidence && registers.get_coincidence_interrupt_enable() ) {
-            request_cpu_interrupt();
+            request_stat_interrupt();
         }
     }
 }

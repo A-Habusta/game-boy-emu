@@ -29,6 +29,12 @@ namespace central_processing_unit {
             run_phantom_cycle = phantom_cycle_callback;
         }
 
+        void request_vblank_interrupt() { request_interrupt(interrupt_type::vblank); }
+        void request_lcd_stat_interrupt() { request_interrupt(interrupt_type::lcd_stat); }
+        void request_timer_interrupt() { request_interrupt(interrupt_type::timer); }
+        void request_serial_interrupt() { request_interrupt(interrupt_type::serial); }
+        void request_joypad_interrupt() { request_interrupt(interrupt_type::joypad); }
+
     private:
         registers::register_file registers;
         memory::memory_map memory;
@@ -73,6 +79,7 @@ namespace central_processing_unit {
         interrupt_type check_for_interrupts();
         void acknowledge_interrupt(interrupt_type);
         void handle_interrupts(interrupt_type);
+        void request_interrupt(interrupt_type);
         //
         // Memory access methods
         //

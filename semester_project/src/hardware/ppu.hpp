@@ -1,4 +1,4 @@
-// File: ppu.hpp
+// File: pixel_processing_unit.hpp
 //
 // Created by Adrian Habusta on 24.04.2023
 //
@@ -14,7 +14,7 @@
 #include "../cpu/cpu_interrupt_typedef.hpp"
 #include "ppu_data.hpp"
 
-namespace ppu {
+namespace pixel_processing_unit {
     constexpr int screen_pixel_width = 160;
     constexpr int screen_pixel_height = 144;
 
@@ -92,7 +92,8 @@ namespace ppu {
 
         std::optional<sprite_cache> current_line_sprites;
 
-        interrupt_callback request_cpu_interrupt;
+        interrupt_callback request_stat_interrupt;
+        interrupt_callback request_vblank_interrupt;
 
         ppu_renderer renderer;
         register_file registers{};
@@ -112,8 +113,8 @@ namespace ppu {
 
         // y is implicit;
         palette::pixel get_pixel_from_sprite(int x, sprite current_sprite);
-        pixel get_pixel_from_background_layer(int x) const;
-        pixel get_pixel_from_window_layer(int x) const;
+        palette::pixel get_pixel_from_background_layer(int x) const;
+        palette::pixel get_pixel_from_window_layer(int x) const;
         bool check_if_in_window(int x) const;
 
         void move_to_next_mode();
@@ -125,8 +126,8 @@ namespace ppu {
         void power_on();
         void power_off();
     public:
-        ppu(SDL_Renderer *renderer, interrupt_callback callback) : request_cpu_interrupt(callback),
-                                                                   renderer (renderer) {}
+        ppu(SDL_Renderer *renderer, interrupt_callback callback, interrupt_callback vblank_callback)
+            : request_stat_interrupt(callback), request_vblank_interrupt(callback), renderer (renderer) {}
 
         void run_m_cycle();
     };
