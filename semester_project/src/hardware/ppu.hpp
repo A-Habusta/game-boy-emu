@@ -139,7 +139,7 @@ namespace pixel_processing_unit {
         ppu(SDL_Renderer *renderer, interrupt_callback stat_callback, interrupt_callback v_blank_callback)
             : request_stat_interrupt(stat_callback), request_v_blank_interrupt(v_blank_callback), renderer (renderer) {}
 
-        void run_m_cycle();
+        void run_machine_cycle();
 
         byte read_vram(word address) {
             if (is_vram_blocked())

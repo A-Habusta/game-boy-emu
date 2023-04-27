@@ -3,6 +3,9 @@
 // Created by Adrian Habusta on 19.04.2023
 //
 
+#include <chrono>
+#include <thread>
+
 #include "cpu/central_processing_unit.hpp"
 #include "hardware/cartridge.hpp"
 #include "hardware/timer.hpp"
@@ -72,7 +75,7 @@ namespace emulator {
 
     byte emulator::memory_map::read_memory(word address) {
         if (address <= rom_end_address) {
-            emu_ref.cart.read_rom(address - rom_start_address);
+            return emu_ref.cart.read_rom(address - rom_start_address);
         }
         else if (address <= vram_end_address) {
             return emu_ref.ppu.read_vram(address - vram_start_address);
@@ -104,8 +107,7 @@ namespace emulator {
     }
 
     emulator::emulator(SDL_Renderer* renderer)
-        : renderer(renderer),
-          cpu([this](word addr){ return read_with_cycling(addr); },
+        : cpu([this](word addr){ return read_with_cycling(addr); },
               [this](word addr, byte value){ write_with_cycling(addr, value); },
               [this](){ run_machine_cycle(); }),
           emulated_timer([this]{ cpu.request_timer_interrupt(); }),
@@ -118,9 +120,33 @@ namespace emulator {
     }
 
 
+    bool emulator::handle_input() {
+        return true;
+    }
+
+    void emulator::sleep_if_frame_time_too_short(time_point time) {
+        auto current_frame_duration = time - last_frame_time_point;
+        if (current_frame_duration < frame_duration) {
+            // This might not be too precise, but it allows the cpu to rest a bit and not be consumed all the time
+            std::this_thread::sleep_for(frame_duration - current_frame_duration);
+        }
+    }
 
     void emulator::run_machine_cycle() {
-        //TODO
-        return;
+        memory.perform_dma_cycle();
+        ppu.run_machine_cycle();
+        //apu.run_machine_cycle();
+        emulated_timer.run_machine_cycle();
+
+        cycle_counter++;
+
+        if (cycle_counter >= m_cycles_per_frame) {
+            handle_input();
+            cycle_counter = 0;
+
+            auto time = clock::now();
+            sleep_if_frame_time_too_short(time);
+            last_frame_time_point = time;
+        }
     }
 }

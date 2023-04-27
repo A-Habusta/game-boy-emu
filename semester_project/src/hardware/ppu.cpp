@@ -6,7 +6,7 @@
 #include "ppu.hpp"
 
 namespace pixel_processing_unit {
-    void ppu::run_m_cycle() {
+    void ppu::run_machine_cycle() {
         if (!is_powered_on)
             return;
 

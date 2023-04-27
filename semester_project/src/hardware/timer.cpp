@@ -16,7 +16,7 @@ void timer::progress_divider() {
 }
 
 void timer::progress_main() {
-    if (!get_counter_enabled())
+    if (!is_counter_enabled())
         return;
 
     main_counter += cycles_per_m_cycle;
@@ -28,7 +28,7 @@ void timer::progress_main() {
 
         if (counter == 0) {
             counter = modulo;
-            request_cpu_interrupt(interrupt_type::timer);
+            request_cpu_interrupt();
         }
     }
 }
