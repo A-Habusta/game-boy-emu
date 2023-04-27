@@ -74,6 +74,7 @@ namespace emulator {
             case 0x45: emu_ref.ppu.write_lcd_y_compare(value); break;
                 // DMA TRANSFER
             case 0x46: start_dma(value); break;
+
             case 0x47: emu_ref.ppu.write_bg_palette(value); break;
             case 0x48: emu_ref.ppu.write_sprite_palette_0(value); break;
             case 0x49: emu_ref.ppu.write_sprite_palette_1(value); break;

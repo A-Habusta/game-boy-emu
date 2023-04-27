@@ -46,9 +46,6 @@ namespace pixel_processing_unit {
 
         if (current_x >= screen_pixel_width)
             return;
-
-        // TODO:
-
     }
 
     void ppu::run_h_blank_t_cycle() {

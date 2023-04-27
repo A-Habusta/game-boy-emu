@@ -20,6 +20,9 @@
 
 
 namespace emulator {
+    static constexpr int t_cycle_frequency = 4194304; //4MhZ
+    static constexpr int m_cycle_frequency = t_cycle_frequency / 4; //1MhZ
+
     class emulator {
         class memory_map {
         public:
