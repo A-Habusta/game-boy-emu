@@ -29,7 +29,7 @@ namespace central_processing_unit {
         byte interrupt_enable_register;
         byte interrupt_requested_register;
 
-        void request_vblank_interrupt() { request_interrupt(interrupt_type::vblank); }
+        void request_v_blank_interrupt() { request_interrupt(interrupt_type::vblank); }
         void request_lcd_stat_interrupt() { request_interrupt(interrupt_type::lcd_stat); }
         void request_timer_interrupt() { request_interrupt(interrupt_type::timer); }
         void request_serial_interrupt() { request_interrupt(interrupt_type::serial); }

@@ -32,7 +32,9 @@ namespace pixel_processing_unit {
             return master_palette[get_color_index(pixel)];
         }
 
-
+        // To be used by outside I/O
+        void write_raw_value(byte value) { colors = value; }
+        byte read_raw_value() const { return colors; }
     private:
         static constexpr int colors_per_palette = 4;
         static constexpr byte internal_color_mask = 0b11;
