@@ -7,6 +7,11 @@
 #include "../utility.hpp"
 
 namespace central_processing_unit {
+    cpu::cpu(memory_read_callback read_memory, memory_write_callback write_memory, cycle_callback run_phantom_cycle)
+        : read_memory(read_memory), write_memory(write_memory), run_phantom_cycle(run_phantom_cycle) {
+    };
+
+
     void cpu::reset() {
         registers.whole.AF = 0x01B0;
         registers.whole.BC = 0x0013;

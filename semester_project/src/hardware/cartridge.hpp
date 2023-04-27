@@ -11,6 +11,7 @@
 
 // TODO Implement
 class cartridge {
+public:
     void load_from_file(const std::string& path) {
         return;
     }

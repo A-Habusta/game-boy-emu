@@ -5,8 +5,6 @@
 
 #include "timer.hpp"
 
-namespace timer {
-    void timer::run_m_cycle() {
-        return;
-    }
+void timer::run_m_cycle() {
+    return;
 }

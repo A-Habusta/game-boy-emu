@@ -180,7 +180,6 @@ namespace central_processing_unit {
         registers.write_half_carry_flag(1);
     }
 
-    // TODO: Test this somehow
     void cpu::daa() {
         bool carry = false;
         byte correction = 0;
@@ -300,7 +299,6 @@ namespace central_processing_unit {
     }
 
 
-    // FIXME: Condense these methods
     void cpu::rlc(registers::half_register_name target_register) {
         byte value = registers.read_from_register(target_register);
 

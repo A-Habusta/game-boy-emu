@@ -61,16 +61,16 @@ namespace pixel_processing_unit {
         // Actual h_blank and pixel_transfer modes can last a variable amount of time depending on how many sprites are
         // on the current scanline and other factors. We will not simulate this, so we will just use the maximum length
         // hlbank.
-        static constexpr int t_cycles_per_hblank = 204;
-        static constexpr int t_cycles_per_vblank = 4560;
+        static constexpr int t_cycles_per_h_blank = 204;
+        static constexpr int t_cycles_per_v_blank = 4560;
         static constexpr int t_cycles_per_oam_read = 80;
         static constexpr int t_cycles_per_pixel_transfer = 172;
 
-        static constexpr int t_cycles_per_scanline = t_cycles_per_hblank + t_cycles_per_pixel_transfer + t_cycles_per_oam_read;
+        static constexpr int t_cycles_per_scanline = t_cycles_per_h_blank + t_cycles_per_pixel_transfer + t_cycles_per_oam_read;
 
         static constexpr int scanlines_per_frame = 154;
         static constexpr int scanlines_per_screen = 144;
-        static constexpr int scanlines_per_vblank = 10;
+        static constexpr int scanlines_per_v_blank = 10;
 
         enum mode {
             h_blank = 0,
@@ -80,10 +80,10 @@ namespace pixel_processing_unit {
         };
 
         static constexpr int mode_length[] = {
-            t_cycles_per_hblank,
-            t_cycles_per_vblank,
-            t_cycles_per_oam_read,
-            t_cycles_per_pixel_transfer
+                t_cycles_per_h_blank,
+                t_cycles_per_v_blank,
+                t_cycles_per_oam_read,
+                t_cycles_per_pixel_transfer
         };
 
         bool is_powered_on{true};
@@ -93,7 +93,7 @@ namespace pixel_processing_unit {
         std::optional<sprite_cache> current_line_sprites;
 
         interrupt_callback request_stat_interrupt;
-        interrupt_callback request_vblank_interrupt;
+        interrupt_callback request_v_blank_interrupt;
 
         ppu_renderer renderer;
         register_file registers{};
@@ -112,7 +112,7 @@ namespace pixel_processing_unit {
         void run_pixel_transfer_t_cycle();
 
         // y is implicit;
-        palette::pixel get_pixel_from_sprite(int x, sprite current_sprite);
+        palette::pixel get_pixel_from_sprite(int x, sprite current_sprite, sprite::size current_size);
         palette::pixel get_pixel_from_background_layer(int x) const;
         palette::pixel get_pixel_from_window_layer(int x) const;
         bool check_if_in_window(int x) const;
@@ -126,10 +126,16 @@ namespace pixel_processing_unit {
         void power_on();
         void power_off();
     public:
-        ppu(SDL_Renderer *renderer, interrupt_callback callback, interrupt_callback vblank_callback)
-            : request_stat_interrupt(callback), request_vblank_interrupt(callback), renderer (renderer) {}
+        ppu(SDL_Renderer *renderer, interrupt_callback stat_callback, interrupt_callback v_blank_callback)
+            : request_stat_interrupt(stat_callback), request_v_blank_interrupt(v_blank_callback), renderer (renderer) {}
 
         void run_m_cycle();
+
+        byte read_vram(word address);
+        byte read_oam(word address);
+
+        void write_vram(word address, byte value);
+        void write_oam(word address, byte value);
     };
 }
 

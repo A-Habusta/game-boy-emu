@@ -8,7 +8,6 @@
 
 #include <functional>
 
-#include "../memory.hpp"
 #include "../utility.hpp"
 #include "registers.hpp"
 
@@ -18,16 +17,17 @@ namespace central_processing_unit {
     constexpr int interrupt_types_count = 5;
 
     class cpu {
+        using memory_read_callback = std::function<byte(word)>;
+        using memory_write_callback = std::function<void(word, byte)>;
+        using cycle_callback = std::function<void()>;
+
     public:
+        cpu(memory_read_callback read_memory, memory_write_callback write_memory, cycle_callback run_phantom_cycle);
         void reset();
         void execute();
 
         byte interrupt_enable_register;
         byte interrupt_requested_register;
-
-        void set_phantom_cycle_callback(std::function<void()> phantom_cycle_callback) {
-            run_phantom_cycle = phantom_cycle_callback;
-        }
 
         void request_vblank_interrupt() { request_interrupt(interrupt_type::vblank); }
         void request_lcd_stat_interrupt() { request_interrupt(interrupt_type::lcd_stat); }
@@ -36,11 +36,14 @@ namespace central_processing_unit {
         void request_joypad_interrupt() { request_interrupt(interrupt_type::joypad); }
 
     private:
+
         registers::register_file registers;
-        memory::memory_map memory;
         byte cached_instruction;
 
-        std::function<void()> run_phantom_cycle;
+        memory_read_callback read_memory;
+        memory_write_callback write_memory;
+
+        cycle_callback run_phantom_cycle;
         bool interrupt_master_enable = false;
         bool queued_ime_enable = false;
 
@@ -83,7 +86,7 @@ namespace central_processing_unit {
         //
         // Memory access methods
         //
-        byte read_byte(word address) { return memory.read_with_cycling(address); }
+        byte read_byte(word address) { return read_memory(address); }
         word read_word(word address) {
             return utility::get_word_from_byte(read_byte(address), read_byte(address + 1));
         }
@@ -96,7 +99,7 @@ namespace central_processing_unit {
             return utility::get_word_from_byte(low, high);
         }
 
-        void write_byte(word address, byte value) { memory.write_with_cycling(address, value); }
+        void write_byte(word address, byte value) { write_memory(address, value); }
         void write_word_to_memory(word address, word value) {
             write_byte(address, utility::get_low_byte(value));
             write_byte(address + 1, utility::get_high_byte(value));

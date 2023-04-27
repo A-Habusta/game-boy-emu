@@ -1,4 +1,4 @@
-// File: apu.hpp
+// File: audio_processing_unit.hpp
 //
 // Created by Adrian Habusta on 24.04.2023
 //
@@ -6,7 +6,7 @@
 #ifndef SEMESTER_PROJECT_APU_HPP
 #define SEMESTER_PROJECT_APU_HPP
 
-namespace apu {
+namespace audio_processing_unit {
     struct apu {
         void run_cycle();
     };

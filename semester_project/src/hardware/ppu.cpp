@@ -58,7 +58,7 @@ namespace pixel_processing_unit {
 
     void ppu::run_v_blank_t_cycle() {
         // Render frame if first cycle
-        if (remaining_t_cycles == t_cycles_per_vblank) {
+        if (remaining_t_cycles == t_cycles_per_v_blank) {
             renderer.render_frame();
         }
 
