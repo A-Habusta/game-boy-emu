@@ -20,6 +20,15 @@ int main() {
 
     emu.reset_cpu();
     while(true) {
-        emu.execute_cpu();
+        try {
+            emu.execute_cpu();
+        }
+        catch (const emulator::exit&) {
+            SDL_DestroyRenderer(renderer);
+            SDL_DestroyWindow(main_window);
+            SDL_Quit();
+            return 0;
+        }
+
     }
 }

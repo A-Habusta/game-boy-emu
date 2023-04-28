@@ -36,6 +36,14 @@ namespace utility {
         return (value >> bit) & 1;
     }
 
+    inline constexpr bool get_lower_nibble(byte value) {
+        return value & 0x0F;
+    }
+
+    inline constexpr bool get_higher_nibble(byte value) {
+        return value >> 4;
+    }
+
     // Cast truncates the value, no need to mask
     inline byte get_low_byte(word value) {
         return value;

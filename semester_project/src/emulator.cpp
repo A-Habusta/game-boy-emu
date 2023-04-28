@@ -113,15 +113,11 @@ namespace emulator {
           emulated_timer([this]{ cpu.request_timer_interrupt(); }),
           ppu(renderer, [this]{ cpu.request_lcd_stat_interrupt(); },
                         [this]{ cpu.request_v_blank_interrupt(); } ),
+          buttons([this]{ cpu.request_joypad_interrupt(); } ),
           apu(),
           cart(),
           ram(),
           memory(*this) {
-    }
-
-
-    bool emulator::handle_input() {
-        return true;
     }
 
     void emulator::sleep_if_frame_time_too_short(time_point time) {
@@ -141,7 +137,8 @@ namespace emulator {
         cycle_counter++;
 
         if (cycle_counter >= m_cycles_per_frame) {
-            handle_input();
+            buttons.handle_input();
+
             cycle_counter = 0;
 
             auto time = clock::now();

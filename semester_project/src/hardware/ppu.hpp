@@ -138,7 +138,9 @@ namespace pixel_processing_unit {
 
     public:
         ppu(SDL_Renderer *renderer, interrupt_callback stat_callback, interrupt_callback v_blank_callback)
-            : request_stat_interrupt(stat_callback), request_v_blank_interrupt(v_blank_callback), renderer (renderer) {}
+            : request_stat_interrupt(stat_callback), request_v_blank_interrupt(v_blank_callback), renderer (renderer) {
+            registers.lcd_y_compare = 145;
+        }
 
         void run_machine_cycle();
 

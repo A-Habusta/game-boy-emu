@@ -12,6 +12,7 @@
 
 #include "cpu/central_processing_unit.hpp"
 #include "hardware/cartridge.hpp"
+#include "hardware/joypad.hpp"
 #include "hardware/timer.hpp"
 #include "hardware/apu.hpp"
 #include "hardware/ram.hpp"
@@ -23,6 +24,7 @@
 namespace emulator {
     // Used as exception by the STOP instruction
     class stop {};
+    class exit {};
 
     constexpr int t_cycles_per_m_cycle = 4;
 
@@ -52,34 +54,38 @@ namespace emulator {
                 }
             }
         private:
-            static constexpr int rom_start_address = 0x0000;
-            static constexpr int rom_end_address = 0x7FFF;
+            enum {
+                rom_start_address = 0x0000,
+                rom_end_address = 0x7FFF,
 
-            static constexpr int vram_start_address = 0x8000;
-            static constexpr int vram_end_address = 0x9FFF;
+                vram_start_address = 0x8000,
+                vram_end_address = 0x9FFF,
 
-            static constexpr int sram_start_address = 0xA000;
-            static constexpr int sram_end_address = 0xBFFF;
+                sram_start_address = 0xA000,
+                sram_end_address = 0xBFFF,
 
-            static constexpr int wram_start_address = 0xC000;
-            static constexpr int wram_end_address = 0xDFFF;
-            static constexpr int echo_start_address = 0xE000;
-            static constexpr int echo_end_address = 0xFDFF;
+                wram_start_address = 0xC000,
+                wram_end_address = 0xDFFF,
 
-            static constexpr int oam_start_address = 0xFE00;
-            static constexpr int oam_end_address = 0xFE9F;
+                echo_start_address = 0xE000,
+                echo_end_address = 0xFDFF,
 
-            static constexpr int unusable_end_address = 0xFEFF;
+                oam_start_address = 0xFE00,
+                oam_end_address = 0xFE9F,
 
-            static constexpr int io_start_address = 0xFF00;
-            static constexpr int io_end_address = 0xFF7F;
+                unusable_end_address = 0xFEFF,
 
-            static constexpr int hram_start_address = 0xFF80;
-            static constexpr int hram_end_address = 0xFFFE;
+                io_start_address = 0xFF00,
+                io_end_address = 0xFF7F,
 
-            static constexpr int interrupt_enable_address = 0xFFFF;
+                hram_start_address = 0xFF80,
+                hram_end_address = 0xFFFE,
 
-            static constexpr int dma_bytes_copied_amount = 0xA0;
+                interrupt_enable_address = 0xFFFF,
+
+                dma_bytes_copied_amount = 0xA0
+            };
+
 
             void start_dma(byte upper_address_byte) {
                 dma_bytes_left = dma_bytes_copied_amount;
@@ -111,6 +117,7 @@ namespace emulator {
         central_processing_unit::cpu cpu;
         timer emulated_timer;
         pixel_processing_unit::ppu ppu;
+        joypad buttons;
         audio_processing_unit::apu apu;
         cartridge cart;
         random_access_memory::ram ram;
@@ -122,8 +129,6 @@ namespace emulator {
         byte read_with_cycling(word address);
         void write_with_cycling(word address, byte value);
         void run_machine_cycle();
-
-        bool handle_input();
 
         void sleep_if_frame_time_too_short(time_point frame_current_time);
 

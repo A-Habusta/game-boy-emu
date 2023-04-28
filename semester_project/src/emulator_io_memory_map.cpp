@@ -11,7 +11,7 @@ namespace emulator {
         byte truncated_address = address;
         switch (truncated_address) {
             // Joypad register
-            case 0x00: return emu_ref.joypad_register;
+            case 0x00: return emu_ref.buttons.read_joypad_status();
 
             // Serial communication registers NOT IMPLEMENTED
 
@@ -50,7 +50,7 @@ namespace emulator {
         byte truncated_address = address;
         switch (truncated_address) {
             // Joypad register
-            case 0x00: emu_ref.joypad_register = value; break;
+            case 0x00: emu_ref.buttons.write_joypad_status(value) ; break;
 
                 // Serial communication registers NOT IMPLEMENTED
 
@@ -73,7 +73,10 @@ namespace emulator {
             case 0x44: emu_ref.ppu.write_lcd_y(value); break;
             case 0x45: emu_ref.ppu.write_lcd_y_compare(value); break;
                 // DMA TRANSFER
-            case 0x46: start_dma(value); break;
+            case 0x46:
+                start_dma(value);
+                emu_ref.ppu.write_dma_transfer(value);
+                break;
 
             case 0x47: emu_ref.ppu.write_bg_palette(value); break;
             case 0x48: emu_ref.ppu.write_sprite_palette_0(value); break;
