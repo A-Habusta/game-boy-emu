@@ -39,10 +39,10 @@ namespace pixel_processing_unit {
         static constexpr int colors_per_palette = 4;
         static constexpr byte internal_color_mask = 0b11;
         static constexpr real_pixel_type master_palette[colors_per_palette] = {
-                0xFF000000,
-                0xFF555555,
+                0xFFFFFFFF,
                 0xFFAAAAAA,
-                0xFFFFFFFF
+                0xFF555555,
+                0xFF000000
         };
         // The palettes are actualy indices into a master palette, every index is 2 bits
         byte colors;
@@ -346,8 +346,8 @@ namespace pixel_processing_unit {
         static constexpr int size = sprite_count * sizeof(sprite);
 
     public:
-        sprite sprites[sprite_count];
-        byte raw_data[size]{};
+        sprite sprites[sprite_count]{};
+        byte raw_data[size];
 
         sprite_cache create_sprite_cache_for_line(int line_y_coordinate, sprite::size sprite_size) {
             int sprite_height = sprite::get_height_from_size(sprite_size);

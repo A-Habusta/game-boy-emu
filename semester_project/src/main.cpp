@@ -14,10 +14,11 @@ int main() {
                                               SDL_WINDOWPOS_UNDEFINED,
                                               window_width,
                                               window_height,
-                                              SDL_WINDOW_VULKAN);
+                                              SDL_WINDOW_OPENGL);
     SDL_Renderer* renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED);
     emulator::emulator emu(renderer);
 
+    emu.reset_cpu();
     while(true) {
         SDL_RenderPresent(renderer);
         emu.execute_cpu();

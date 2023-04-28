@@ -119,8 +119,6 @@ namespace emulator {
 
         byte joypad_register;
 
-        bool is_stopped{false};
-
         byte read_with_cycling(word address);
         void write_with_cycling(word address, byte value);
         void run_machine_cycle();
@@ -136,10 +134,11 @@ namespace emulator {
                 cpu.execute();
             }
             catch (const stop&) {
-                is_stopped = true;
                 emulated_timer.write_divider(0);
             }
         }
+
+        void reset_cpu() { cpu.reset(); }
     };
 }
 

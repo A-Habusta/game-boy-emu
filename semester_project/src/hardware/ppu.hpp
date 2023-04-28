@@ -112,6 +112,7 @@ namespace pixel_processing_unit {
         void run_pixel_transfer_t_cycle();
 
         // y is implicit;
+        palette::real_pixel_type get_pixel(int x);
         palette::pixel get_pixel_from_sprite(int x, sprite current_sprite, sprite::size current_size);
         palette::pixel get_pixel_from_background_layer(int x) const;
         palette::pixel get_pixel_from_window_layer(int x) const;

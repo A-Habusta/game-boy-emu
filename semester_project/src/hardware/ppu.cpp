@@ -46,6 +46,9 @@ namespace pixel_processing_unit {
 
         if (current_x >= screen_pixel_width)
             return;
+
+        auto actual_pixel = get_pixel(current_x);
+        renderer.save_pixel(current_x, registers.lcd_y, actual_pixel);
     }
 
     void ppu::run_h_blank_t_cycle() {
@@ -64,6 +67,47 @@ namespace pixel_processing_unit {
         }
     }
 
+    palette::real_pixel_type ppu::get_pixel(int x) {
+        palette::pixel bg_pixel{0};
+
+        bool draw_bg_elements = registers.get_bg_window_display_priority();
+        if (draw_bg_elements) {
+            if (check_if_in_window(x) && registers.get_window_draw_enable())
+                bg_pixel = get_pixel_from_window_layer(x);
+            else
+                bg_pixel = get_pixel_from_background_layer(x);
+        }
+
+        std::optional<sprite> current_sprite = current_line_sprites->get_first_sprite_at_current_x(x);
+        if (!current_sprite) {
+            // Return bg if there is no sprite
+            return registers.background_palette.convert_to_real_pixel(bg_pixel);
+        }
+        auto sprite_size = registers.get_sprite_size();
+
+        palette::pixel sprite_pixel = get_pixel_from_sprite(x, *current_sprite, sprite_size);
+
+        while (sprite_pixel.is_transparent() ) {
+            current_sprite = current_line_sprites->get_next_sprite_at_current_x(x);
+            if (!current_sprite) {
+                // Return bg if there is no non-transparent sprite
+                return registers.background_palette.convert_to_real_pixel(bg_pixel);
+            }
+            sprite_pixel = get_pixel_from_sprite(x, *current_sprite, sprite_size);
+        }
+
+        if (current_sprite->get_priority() && !bg_pixel.is_transparent()) {
+            // Return bg if "bg over sprite" priority is set and bg is not transparent
+            return registers.background_palette.convert_to_real_pixel(bg_pixel);
+        }
+
+        // Return sprite otherwise
+        bool palette_index = current_sprite->get_palette_number();
+        palette sprite_palette = palette_index ? registers.sprite_palette_1 : registers.sprite_palette_0;
+
+        return sprite_palette.convert_to_real_pixel(sprite_pixel);
+
+    }
 
     palette::pixel ppu::get_pixel_from_sprite(int x, sprite current_sprite, sprite::size sprite_size) {
         int sprite_width = sprite::width;
@@ -82,6 +126,52 @@ namespace pixel_processing_unit {
         auto tile = vram.tiles.tiles.get_tile_oam(tile_number);
 
         return tile.get_pixel(sprite_x, sprite_y);
+    }
+
+    palette::pixel ppu::get_pixel_from_background_layer(int x) const {
+        int bg_x = (x + registers.scroll_x) & 0xFF;
+        int bg_y = (registers.lcd_y + registers.scroll_y) & 0xFF;
+
+        bool map_choice = registers.get_bg_tile_map_select();
+        const tile_data::map& tile_map = map_choice ? vram.tiles.tile_map_1 : vram.tiles.tile_map_0;
+
+        int tile_number_x = bg_x / tile::size;
+        int tile_number_y = bg_y / tile::size;
+
+        auto tile_index = tile_map.get_tile_index(tile_number_x, tile_number_y);
+
+        bool method = registers.get_bg_and_window_tile_data_select();
+        auto tile = vram.tiles.tiles.get_tile_bg_and_window(tile_index, method);
+
+        int tile_x = bg_x % tile::size;
+        int tile_y = bg_y % tile::size;
+
+        return tile.get_pixel(tile_x, tile_y);
+    }
+
+    palette::pixel ppu::get_pixel_from_window_layer(int x) const {
+        int window_x = x - (registers.window_x - 7);
+        int window_y = registers.lcd_y - registers.window_y;
+
+        bool map_choice = registers.get_window_tile_map_select();
+        const tile_data::map& tile_map = map_choice ? vram.tiles.tile_map_1 : vram.tiles.tile_map_0;
+
+        int tile_number_x = window_x / tile::size;
+        int tile_number_y = window_y / tile::size;
+
+        auto tile_index = tile_map.get_tile_index(tile_number_x, tile_number_y);
+
+        bool method = registers.get_bg_and_window_tile_data_select();
+        auto tile = vram.tiles.tiles.get_tile_bg_and_window(tile_index, method);
+
+        int tile_x = window_x % tile::size;
+        int tile_y = window_y % tile::size;
+
+        return tile.get_pixel(tile_x, tile_y);
+    }
+
+    bool ppu::check_if_in_window(int x) const {
+        return x >= registers.window_x - 7 && registers.lcd_y >= registers.window_y;
     }
 
 
