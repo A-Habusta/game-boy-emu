@@ -20,7 +20,6 @@ int main() {
 
     emu.reset_cpu();
     while(true) {
-        SDL_RenderPresent(renderer);
         emu.execute_cpu();
     }
 }
