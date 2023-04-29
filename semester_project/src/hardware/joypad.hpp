@@ -54,9 +54,10 @@ class joypad {
 public:
     joypad(interrupt_callback callback) : request_joystick_interrupt(callback) {}
 
-    void handle_input();
+    // Bool return type is kind of a hack to get info about whether a joypad interrupt triggered quickly
+    bool handle_input();
 
-    void update_joypad_status();
+    bool update_joypad_status();
 
     void write_joypad_status(byte value);
     byte read_joypad_status();

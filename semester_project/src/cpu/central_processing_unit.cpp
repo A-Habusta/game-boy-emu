@@ -11,23 +11,6 @@ namespace central_processing_unit {
         : read_memory(read_memory), write_memory(write_memory), run_phantom_cycle(run_phantom_cycle) {
     };
 
-
-    void cpu::reset() {
-        registers.whole.AF = 0x01B0;
-        registers.whole.BC = 0x0013;
-        registers.whole.DE = 0x00D8;
-        registers.whole.HL = 0x014D;
-        registers.whole.SP = 0xFFFE;
-        registers.whole.PC = 0x0100;
-
-        interrupt_master_enable = false;
-        interrupt_enable_register = 0;
-        interrupt_requested_register = 0;
-
-        // Reset should actually perform one M cycle
-        prefetch_next_instruction();
-    }
-
     void cpu::execute() {
         switch (current_state) {
             case state::running: execute_running_state(); break;
@@ -86,6 +69,7 @@ namespace central_processing_unit {
 
     void cpu::enable_interrupts() {
         interrupt_master_enable = true;
+        queued_ime_enable = false;
     }
 
     void cpu::disable_interrupts() {

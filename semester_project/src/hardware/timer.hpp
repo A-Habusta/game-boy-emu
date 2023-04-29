@@ -21,7 +21,7 @@ class timer {
     int divider_counter = 0;
     int main_counter = 0;
 
-    byte divider = 0xAB;
+    byte divider = 0;
     byte counter = 0;
     byte modulo = 0;
     byte control = 0;

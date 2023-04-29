@@ -3,6 +3,7 @@
 // Created by Adrian Habusta on 19.04.2023
 //
 
+#include <string_view>
 #include <chrono>
 #include <thread>
 
@@ -106,7 +107,8 @@ namespace emulator {
         }
     }
 
-    emulator::emulator(SDL_Renderer* renderer)
+    emulator::emulator(SDL_Renderer* renderer, std::string_view boot_rom_path, std::string_view rom_path,
+                       std::string_view sram_path)
         : cpu([this](word addr){ return read_with_cycling(addr); },
               [this](word addr, byte value){ write_with_cycling(addr, value); },
               [this](){ run_machine_cycle(); }),
@@ -115,7 +117,7 @@ namespace emulator {
                         [this]{ cpu.request_v_blank_interrupt(); } ),
           buttons([this]{ cpu.request_joypad_interrupt(); } ),
           apu(),
-          cart(),
+          cart(boot_rom_path, rom_path, sram_path),
           ram(),
           memory(*this) {
     }
@@ -142,6 +144,18 @@ namespace emulator {
             cycle_counter = 0;
 
             auto time = clock::now();
+            sleep_if_frame_time_too_short(time);
+            last_frame_time_point = time;
+        }
+    }
+
+    void emulator::stop_loop() {
+        bool stopped = true;
+        while (stopped) {
+            auto time = clock::now();
+
+            stopped = !buttons.handle_input();
+
             sleep_if_frame_time_too_short(time);
             last_frame_time_point = time;
         }

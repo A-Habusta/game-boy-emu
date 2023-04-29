@@ -1,7 +1,11 @@
-#include <SDL.h>
+
+#include <string_view>
 #include <iostream>
+#include <SDL.h>
 
 #include "emulator.hpp"
+
+using namespace std::literals::string_view_literals;
 
 constexpr int screen_size_factor = 2;
 
@@ -16,9 +20,17 @@ int main() {
                                               window_height,
                                               SDL_WINDOW_OPENGL);
     SDL_Renderer* renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED);
-    emulator::emulator emu(renderer);
 
-    emu.reset_cpu();
+    std::string_view boot_rom_path = "/home/adrian/Downloads/dmg_boot.bin"sv;
+    //std::string_view rom_path = "/home/adrian/Downloads/tetris.gb"sv;
+    std::string_view rom_path = "/home/adrian/git/gb-test-roms/cpu_instrs/individual/02-interrupts.gb"sv;
+    std::string_view sram_path = ""sv;
+
+    emulator::emulator emu(renderer, boot_rom_path, rom_path, sram_path);
+
+    // Perform first fetch from bootrom
+    emu.initialize_cpu();
+
     while(true) {
         try {
             emu.execute_cpu();
@@ -29,6 +41,5 @@ int main() {
             SDL_Quit();
             return 0;
         }
-
     }
 }

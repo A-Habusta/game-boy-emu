@@ -50,6 +50,7 @@ namespace pixel_processing_unit {
 
             SDL_RenderPresent(renderer);
         }
+
         void render_blank_frame() {
             SDL_RenderClear(renderer);
             SDL_RenderPresent(renderer);
@@ -86,8 +87,8 @@ namespace pixel_processing_unit {
                 t_cycles_per_pixel_transfer
         };
 
-        bool is_powered_on{true};
-        mode current_mode{};
+        bool is_powered_on{false};
+        mode current_mode{h_blank};
         int remaining_t_cycles{};
 
         std::optional<sprite_cache> current_line_sprites;
@@ -101,8 +102,10 @@ namespace pixel_processing_unit {
         vram_view vram{};
         oam_view oam{};
 
-        bool is_vram_blocked() const { return current_mode == mode::pixel_transfer; }
-        bool is_oam_blocked() const { return current_mode == mode::pixel_transfer || current_mode == mode::oam_search; }
+        bool is_vram_blocked() const { return current_mode == mode::pixel_transfer && is_powered_on; }
+        bool is_oam_blocked() const {
+            return (current_mode == mode::pixel_transfer || current_mode == mode::oam_search) && is_powered_on;
+        }
 
         void run_t_cycle();
 
@@ -139,20 +142,19 @@ namespace pixel_processing_unit {
     public:
         ppu(SDL_Renderer *renderer, interrupt_callback stat_callback, interrupt_callback v_blank_callback)
             : request_stat_interrupt(stat_callback), request_v_blank_interrupt(v_blank_callback), renderer (renderer) {
-            registers.lcd_y_compare = 145;
         }
 
         void run_machine_cycle();
 
         byte read_vram(word address) {
             if (is_vram_blocked())
-                return 0xFF;
+                return utility::undefined_byte;
 
             return vram.raw_data[address];
         }
         byte read_oam(word address) {
             if (is_oam_blocked())
-                return 0xFF;
+                return utility::undefined_byte;
 
             return oam.raw_data[address];
         }
@@ -191,7 +193,7 @@ namespace pixel_processing_unit {
         void write_lcd_status(byte value) { registers.lcd_status = value; }
         void write_scroll_y(byte value) { registers.scroll_y = value; }
         void write_scroll_x(byte value) { registers.scroll_x = value; }
-        void write_lcd_y(byte value) { registers.lcd_y = value; }
+        void write_lcd_y(byte value) { return; }
         void write_lcd_y_compare(byte value) { registers.lcd_y_compare = value; }
         void write_dma_transfer(byte value) { registers.dma_transfer = value; }
         void write_bg_palette(byte value) { registers.background_palette.write_raw_value(value); }

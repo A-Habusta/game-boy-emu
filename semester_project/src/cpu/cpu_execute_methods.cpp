@@ -73,7 +73,7 @@ namespace central_processing_unit {
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(1);
         registers.write_half_carry_flag((((registers.half.A & 0xF) - (value & 0xF) - carry) & 0x10) != 0);
-        registers.write_carry_flag((word)registers.half.A - (word)value - carry > 0xFF);
+        registers.write_carry_flag((word)registers.half.A < ((word)value + carry));
     }
 
     void cpu::and_(byte value) {
@@ -221,8 +221,8 @@ namespace central_processing_unit {
 
     void cpu::jump_relative(byte offset, bool condition) {
         if (condition) {
-            offset = (int)(int8_t)(offset);
-            int result = (int)registers.whole.PC + offset;
+            int signed_offset = (int)(int8_t)(offset);
+            int result = (int)registers.whole.PC + signed_offset;
 
             run_phantom_cycle();
             registers.whole.PC = (word)result;
@@ -255,7 +255,13 @@ namespace central_processing_unit {
     }
 
 
-    void cpu::stop() { throw emulator::stop{}; }
+    void cpu::stop() {
+        byte next = read_byte_at_pc_with_increment();
+        if (next != 0x00) {
+            crash();
+        }
+        throw emulator::stop{};
+    }
     void cpu::halt() {
         current_state = state::halt_preparation;
     }

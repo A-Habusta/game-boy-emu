@@ -6,7 +6,7 @@
 #include "../emulator.hpp"
 #include "joypad.hpp"
 
-void joypad::handle_input() {
+bool joypad::handle_input() {
     SDL_Event event;
     // PollEvent also updates the global keyboard state
     while (SDL_PollEvent(&event)) {
@@ -19,7 +19,7 @@ void joypad::handle_input() {
         }
     }
 
-    update_joypad_status();
+    return update_joypad_status();
 }
 
 // Keys are not remappable right now
@@ -48,7 +48,7 @@ bool joypad::check_for_keys_high_to_low_transition(byte new_status) {
     return (old_status_lower_nibble & ~new_status_lower_nibble) != 0;
 }
 
-void joypad::update_joypad_status() {
+bool joypad::update_joypad_status() {
     byte result_upper_nibble = joypad_status & joypad_source_mask;
     byte result_lower_nibble = default_keys_low_nibble;
 
@@ -61,10 +61,14 @@ void joypad::update_joypad_status() {
 
     byte result = result_upper_nibble | result_lower_nibble;
 
-    if (check_for_keys_high_to_low_transition(result))
+    bool result_changed = check_for_keys_high_to_low_transition(result);
+
+    if (result_changed)
         request_joystick_interrupt();
 
     joypad_status = result;
+
+    return result_changed;
 }
 
 

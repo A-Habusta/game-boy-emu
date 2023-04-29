@@ -110,7 +110,7 @@ namespace pixel_processing_unit {
 
         tile get_tile_bg_and_window(index index, bool method) const {
             byte value = index.get_value();
-            return method ? get_tile_method_8800(value) : get_tile_method_8000(value);
+            return method ? get_tile_method_8000(value) : get_tile_method_8800(value);
         }
 
     private:
@@ -124,7 +124,7 @@ namespace pixel_processing_unit {
         }
 
         tile get_tile_method_8800(byte index) const {
-            int8_t signed_index = (int8_t)(index);
+            int signed_index = (int)(int8_t)(index);
             return tiles[tile_offset_method_8800 + signed_index];
         }
     };

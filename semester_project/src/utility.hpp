@@ -6,8 +6,10 @@
 #ifndef SEMESTER_PROJECT_UTILITY_HPP
 #define SEMESTER_PROJECT_UTILITY_HPP
 
-#include <cstdint>
+#include <string_view>
 #include <functional>
+#include <fstream>
+#include <cstdint>
 
 using byte = uint8_t;
 using word = uint16_t;
@@ -54,7 +56,21 @@ namespace utility {
     }
 
     inline word get_word_from_byte(byte low, byte high) {
-        return (((word)high) << 8) | low;
+        return (((word)high) << 8) | (word) low;
+    }
+
+    inline void read_file(std::string_view path, byte* target, std::size_t size, std::string_view error = "") {
+        std::ifstream file(path.data(), std::ios::binary);
+        if (!file.is_open()) {
+            if (!error.empty())
+                throw std::runtime_error(std::string(error) + " " + path.data());
+            else
+                throw std::runtime_error(path.data());
+        }
+
+        file.read(reinterpret_cast<char*>(target), size);
+
+        file.close();
     }
 }
 

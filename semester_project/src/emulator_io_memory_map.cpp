@@ -40,7 +40,7 @@ namespace emulator {
             case 0x4A: return emu_ref.ppu.read_window_y();
             case 0x4B: return emu_ref.ppu.read_window_x();
 
-            // Boot ROM disable NOT IMPLEMENTED
+            case 0x50: return emu_ref.cart.read_boot_rom_disable();
 
             default: return utility::undefined_byte;
         }
@@ -83,6 +83,8 @@ namespace emulator {
             case 0x49: emu_ref.ppu.write_sprite_palette_1(value); break;
             case 0x4A: emu_ref.ppu.write_window_y(value); break;
             case 0x4B: emu_ref.ppu.write_window_x(value); break;
+
+            case 0x50: emu_ref.cart.write_boot_rom_disable(value); break;
 
             default: break;
         }

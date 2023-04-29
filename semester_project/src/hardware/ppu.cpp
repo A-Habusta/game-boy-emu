@@ -78,6 +78,10 @@ namespace pixel_processing_unit {
                 bg_pixel = get_pixel_from_background_layer(x);
         }
 
+        if (!registers.get_sprite_draw_enable()) {
+            return registers.background_palette.convert_to_real_pixel(bg_pixel);
+        }
+
         std::optional<sprite> current_sprite = current_line_sprites->get_first_sprite_at_current_x(x);
         if (!current_sprite) {
             // Return bg if there is no sprite
@@ -176,7 +180,7 @@ namespace pixel_processing_unit {
 
 
     void ppu::move_to_next_mode() {
-        mode next_mode;
+        mode next_mode = mode::oam_search;
         switch (current_mode) {
             case mode::oam_search:
                 next_mode = mode::pixel_transfer;

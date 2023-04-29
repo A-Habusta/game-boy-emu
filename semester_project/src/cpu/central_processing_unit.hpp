@@ -23,7 +23,6 @@ namespace central_processing_unit {
 
     public:
         cpu(memory_read_callback read_memory, memory_write_callback write_memory, cycle_callback run_phantom_cycle);
-        void reset();
         void execute();
 
         byte interrupt_enable_register;
@@ -35,16 +34,18 @@ namespace central_processing_unit {
         void request_serial_interrupt() { request_interrupt(interrupt_type::serial); }
         void request_joypad_interrupt() { request_interrupt(interrupt_type::joypad); }
 
+        void fetch_first_instruction() { prefetch_next_instruction(); }
+
     private:
 
-        registers::register_file registers;
-        byte cached_instruction;
+        registers::register_file registers{};
+        byte cached_instruction{};
 
         memory_read_callback read_memory;
         memory_write_callback write_memory;
 
         cycle_callback run_phantom_cycle;
-        bool interrupt_master_enable = false;
+        bool interrupt_master_enable = true;
         bool queued_ime_enable = false;
 
         enum class state {

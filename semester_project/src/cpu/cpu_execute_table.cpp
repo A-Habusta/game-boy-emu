@@ -29,6 +29,7 @@ namespace central_processing_unit {
             case 0x7C: load(registers::half_register_name::A, registers.half.H); break;
             case 0x7D: load(registers::half_register_name::A, registers.half.L); break;
 
+            case 0x47: load(registers::half_register_name::B, registers.half.A); break;
             case 0x40: load(registers::half_register_name::B, registers.half.B); break;
             case 0x41: load(registers::half_register_name::B, registers.half.C); break;
             case 0x42: load(registers::half_register_name::B, registers.half.D); break;
@@ -36,6 +37,8 @@ namespace central_processing_unit {
             case 0x44: load(registers::half_register_name::B, registers.half.H); break;
             case 0x45: load(registers::half_register_name::B, registers.half.L); break;
 
+
+            case 0x4F: load(registers::half_register_name::C, registers.half.A); break;
             case 0x48: load(registers::half_register_name::C, registers.half.B); break;
             case 0x49: load(registers::half_register_name::C, registers.half.C); break;
             case 0x4A: load(registers::half_register_name::C, registers.half.D); break;
@@ -43,6 +46,7 @@ namespace central_processing_unit {
             case 0x4C: load(registers::half_register_name::C, registers.half.H); break;
             case 0x4D: load(registers::half_register_name::C, registers.half.L); break;
 
+            case 0x57: load(registers::half_register_name::D, registers.half.A); break;
             case 0x50: load(registers::half_register_name::D, registers.half.B); break;
             case 0x51: load(registers::half_register_name::D, registers.half.C); break;
             case 0x52: load(registers::half_register_name::D, registers.half.D); break;
@@ -50,6 +54,7 @@ namespace central_processing_unit {
             case 0x54: load(registers::half_register_name::D, registers.half.H); break;
             case 0x55: load(registers::half_register_name::D, registers.half.L); break;
 
+            case 0x5F: load(registers::half_register_name::E, registers.half.A); break;
             case 0x58: load(registers::half_register_name::E, registers.half.B); break;
             case 0x59: load(registers::half_register_name::E, registers.half.C); break;
             case 0x5A: load(registers::half_register_name::E, registers.half.D); break;
@@ -57,6 +62,7 @@ namespace central_processing_unit {
             case 0x5C: load(registers::half_register_name::E, registers.half.H); break;
             case 0x5D: load(registers::half_register_name::E, registers.half.L); break;
 
+            case 0x67: load(registers::half_register_name::H, registers.half.A); break;
             case 0x60: load(registers::half_register_name::H, registers.half.B); break;
             case 0x61: load(registers::half_register_name::H, registers.half.C); break;
             case 0x62: load(registers::half_register_name::H, registers.half.D); break;
@@ -64,6 +70,7 @@ namespace central_processing_unit {
             case 0x64: load(registers::half_register_name::H, registers.half.H); break;
             case 0x65: load(registers::half_register_name::H, registers.half.L); break;
 
+            case 0x6F: load(registers::half_register_name::L, registers.half.A); break;
             case 0x68: load(registers::half_register_name::L, registers.half.B); break;
             case 0x69: load(registers::half_register_name::L, registers.half.C); break;
             case 0x6A: load(registers::half_register_name::L, registers.half.D); break;
@@ -137,10 +144,10 @@ namespace central_processing_unit {
             case 0xF1: pop(registers::whole_register_name::AF); break;
 
             //push
-            case 0xF5: push(registers.whole.AF); break;
             case 0xC5: push(registers.whole.BC); break;
             case 0xD5: push(registers.whole.DE); break;
             case 0xE5: push(registers.whole.HL); break;
+            case 0xF5: push(registers.whole.AF); break;
 
             //add
             case 0x87: add(registers.half.A); break;
