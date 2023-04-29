@@ -11,8 +11,10 @@
 #include "../utility.hpp"
 
 namespace central_processing_unit {
-    cpu::cpu(memory_read_callback read_memory, memory_write_callback write_memory, cycle_callback run_phantom_cycle)
-        : read_memory(std::move(std::move(read_memory))), write_memory(std::move(std::move(write_memory))), run_phantom_cycle(std::move(std::move(run_phantom_cycle))) {
+    cpu::cpu(memory_read_callback&& read_memory, memory_write_callback&& write_memory,
+             cycle_callback&& run_phantom_cycle)
+        : read_memory(std::move(read_memory)), write_memory(std::move(write_memory)),
+          run_phantom_cycle(std::move(run_phantom_cycle)) {
     };
 
     void cpu::execute() {
@@ -80,7 +82,6 @@ namespace central_processing_unit {
         acknowledge_interrupt(interrupt);
 
         interrupt_master_enable = false;
-
         word interrupt_handler_address = interrupt_jump_targets[interrupt];
 
         // 3 cycles

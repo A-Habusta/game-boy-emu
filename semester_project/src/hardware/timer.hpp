@@ -38,7 +38,7 @@ class timer {
 
     interrupt_callback request_cpu_interrupt;
 public:
-    explicit timer(interrupt_callback callback) : request_cpu_interrupt(std::move(std::move(callback))) {};
+    explicit timer(interrupt_callback&& callback) : request_cpu_interrupt(std::move(callback)) {};
     void run_machine_cycle() {
         progress_divider();
         progress_main();

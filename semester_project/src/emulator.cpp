@@ -107,6 +107,7 @@ namespace emulator {
         }
 
         // Unreachable
+        return utility::undefined_byte;
     }
 
     emulator::emulator(SDL_Renderer* renderer, std::string_view boot_rom_path, std::string_view rom_path,
@@ -151,15 +152,44 @@ namespace emulator {
         }
     }
 
+    bool check_if_pressed_key_is_emulator_key(SDL_Keycode key) {
+        switch (key) {
+            case SDLK_UP:
+            case SDLK_DOWN:
+            case SDLK_LEFT:
+            case SDLK_RIGHT:
+            case SDLK_z:
+            case SDLK_x:
+            case SDLK_RETURN:
+            case SDLK_SPACE:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     void emulator::stop_loop() {
+        // FIXME: this is ugly
         bool stopped = true;
         while (stopped) {
             auto time = clock::now();
 
-            stopped = !buttons.handle_input();
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT)
+                    throw exit();
+
+                if (event.type == SDL_KEYDOWN) {
+                    stopped = !check_if_pressed_key_is_emulator_key(event.key.keysym.sym);
+                    if (!stopped)
+                        break;
+                }
+            }
 
             sleep_if_frame_time_too_short(time);
             last_frame_time_point = time;
         }
+        buttons.handle_input();
     }
 }

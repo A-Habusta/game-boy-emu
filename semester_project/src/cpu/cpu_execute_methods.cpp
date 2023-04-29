@@ -44,12 +44,12 @@ namespace central_processing_unit {
     void cpu::add(byte value, bool carry) {
         byte result = registers.half.A + value + carry;
 
-        registers.half.A = result;
-
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(false);
-        registers.write_half_carry_flag((((registers.half.A & 0xF) + (value & 0xF) + carry) & 0x10) != 0);
+        registers.write_half_carry_flag(utility::get_bit((registers.half.A & 0xF) + (value & 0xF) + carry, 4));
         registers.write_carry_flag(((word)registers.half.A + (word)value + carry) > 0xFF);
+
+        registers.half.A = result;
 
         prefetch_next_instruction_and_handle_interrupts();
     }
@@ -57,12 +57,11 @@ namespace central_processing_unit {
     void cpu::add16(word value) {
         word result = registers.whole.HL + value;
 
-        registers.whole.HL = result;
-
         registers.write_subtract_flag(false);
-        registers.write_half_carry_flag((((registers.whole.HL & 0xFFF) + (value & 0xFFF)) & 0x1000) != 0);
+        registers.write_half_carry_flag(utility::get_bit((registers.whole.HL & 0xFFF) + (value & 0xFFF), 12));
         registers.write_carry_flag((dword)registers.whole.HL + (dword)value > 0xFFFF);
 
+        registers.whole.HL = result;
         run_phantom_cycle();
 
         prefetch_next_instruction_and_handle_interrupts();
@@ -70,12 +69,13 @@ namespace central_processing_unit {
 
     word cpu::add_signed_to_sp(byte value) {
         word sign_extended_value = utility::sign_extend_byte_to_word(value);
-        word result = registers.whole.SP + sign_extended_value;
 
         registers.write_zero_flag(false);
         registers.write_subtract_flag(false);
-        registers.write_half_carry_flag((((registers.whole.HL & 0xFFF) + (value & 0xFFF)) & 0x1000) != 0);
-        registers.write_carry_flag((dword)registers.whole.HL + (dword)value > 0xFFFF);
+        registers.write_half_carry_flag(utility::get_bit((registers.whole.SP & 0xFFF) + (value & 0xFFF), 12));
+        registers.write_carry_flag((dword)registers.whole.SP + (dword)value > 0xFFFF);
+
+        word result = registers.whole.SP + sign_extended_value;
 
         // Not sure if correct order but nothing can access SP (I think) during this cycle anyway
         run_phantom_cycle();

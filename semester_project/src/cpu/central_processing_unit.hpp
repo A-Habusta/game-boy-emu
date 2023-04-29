@@ -22,7 +22,8 @@ namespace central_processing_unit {
         using cycle_callback = std::function<void()>;
 
     public:
-        cpu(memory_read_callback read_memory, memory_write_callback write_memory, cycle_callback run_phantom_cycle);
+        cpu(memory_read_callback&& read_memory, memory_write_callback&& write_memory,
+            cycle_callback&& run_phantom_cycle);
         void execute();
 
         byte interrupt_enable_register{};

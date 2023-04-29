@@ -55,13 +55,12 @@ class joypad {
     bool are_direction_keys_selected() const { return !utility::get_bit(joypad_status, read_direction_buttons_pos); }
     bool are_action_keys_selected() const { return !utility::get_bit(joypad_status, read_action_buttons_pos); }
 
+    void update_joypad_status();
+
 public:
     explicit joypad(interrupt_callback callback) : request_joystick_interrupt(std::move(std::move(callback))) {}
 
-    // Bool return type is kind of a hack to get info about whether a joypad interrupt triggered quickly
-    bool handle_input();
-
-    bool update_joypad_status();
+    void handle_input();
 
     void write_joypad_status(byte value);
     byte read_joypad_status() const;

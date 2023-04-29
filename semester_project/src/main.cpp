@@ -24,7 +24,7 @@ int main() {
 
     std::string_view boot_rom_path = "/home/adrian/Downloads/dmg_boot.bin"sv;
     //std::string_view rom_path = "/home/adrian/Downloads/tetris.gb"sv;
-    std::string_view rom_path = "/home/adrian/git/gb-test-roms/cpu_instrs/individual/04-op r,imm.gb"sv;
+    std::string_view rom_path = "/home/adrian/git/gb-test-roms/cpu_instrs/individual/05-op rp.gb"sv;
     std::string_view sram_path = ""sv;
 
     emulator::emulator emu(renderer, boot_rom_path, rom_path, sram_path);
