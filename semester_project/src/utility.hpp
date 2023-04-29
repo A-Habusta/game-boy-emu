@@ -55,7 +55,7 @@ namespace utility {
         return value >> 8;
     }
 
-    inline word get_word_from_byte(byte low, byte high) {
+    inline word get_word_from_bytes(byte low, byte high) {
         return (((word)high) << 8) | (word) low;
     }
 
@@ -71,6 +71,15 @@ namespace utility {
         file.read(reinterpret_cast<char*>(target), size);
 
         file.close();
+    }
+
+    inline word sign_extend_byte_to_word(byte lower_byte) {
+        byte upper_byte = 0;
+        if (get_bit(lower_byte, 7)) {
+            upper_byte = 0xFF;
+        }
+
+        return get_word_from_bytes(lower_byte, upper_byte);
     }
 }
 

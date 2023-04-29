@@ -7,7 +7,5 @@
 
 // This is here symbolically, it will probably not be implemented
 namespace audio_processing_unit {
-    void apu::run_cycle() {
-        return;
-    }
+    void apu::run_cycle() {}
 }

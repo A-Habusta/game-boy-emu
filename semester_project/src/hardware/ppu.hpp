@@ -9,6 +9,8 @@
 #include <functional>
 #include <optional>
 #include <cstring>
+#include <utility>
+#include <utility>
 #include <SDL.h>
 
 #include "../cpu/cpu_interrupt_typedef.hpp"
@@ -22,7 +24,7 @@ namespace pixel_processing_unit {
         SDL_Renderer *renderer;
         SDL_Texture *texture;
 
-        palette::real_pixel_type screen_buffer[screen_pixel_height][screen_pixel_width];
+        palette::real_pixel_type screen_buffer[screen_pixel_height][screen_pixel_width]{};
 
         void push_buffer_to_texture() {
             palette::real_pixel_type *pixels;
@@ -33,7 +35,7 @@ namespace pixel_processing_unit {
             SDL_UnlockTexture(texture);
         }
     public:
-        ppu_renderer(SDL_Renderer *renderer) : renderer(renderer) {
+        explicit ppu_renderer(SDL_Renderer *renderer) : renderer(renderer) {
             texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
                                         screen_pixel_width, screen_pixel_height);
         }
@@ -71,7 +73,6 @@ namespace pixel_processing_unit {
 
         static constexpr int scanlines_per_frame = 154;
         static constexpr int scanlines_per_screen = 144;
-        static constexpr int scanlines_per_v_blank = 10;
 
         enum mode {
             h_blank = 0,
@@ -89,7 +90,7 @@ namespace pixel_processing_unit {
 
         bool is_powered_on{false};
         mode current_mode{h_blank};
-        int remaining_t_cycles{};
+        int remaining_t_cycles{mode_length[current_mode]};
 
         std::optional<sprite_cache> current_line_sprites;
 
@@ -102,24 +103,24 @@ namespace pixel_processing_unit {
         vram_view vram{};
         oam_view oam{};
 
-        bool is_vram_blocked() const { return current_mode == mode::pixel_transfer && is_powered_on; }
-        bool is_oam_blocked() const {
+        [[nodiscard]] bool is_vram_blocked() const { return current_mode == mode::pixel_transfer && is_powered_on; }
+        [[nodiscard]] bool is_oam_blocked() const {
             return (current_mode == mode::pixel_transfer || current_mode == mode::oam_search) && is_powered_on;
         }
 
         void run_t_cycle();
 
-        void run_h_blank_t_cycle();
+        static void run_h_blank_t_cycle();
         void run_v_blank_t_cycle();
         void run_oam_search_t_cycle();
         void run_pixel_transfer_t_cycle();
 
         // y is implicit;
         palette::real_pixel_type get_pixel(int x);
-        palette::pixel get_pixel_from_sprite(int x, sprite current_sprite, sprite::size current_size);
-        palette::pixel get_pixel_from_background_layer(int x) const;
-        palette::pixel get_pixel_from_window_layer(int x) const;
-        bool check_if_in_window(int x) const;
+        palette::pixel get_pixel_from_sprite(int x, sprite current_sprite, sprite::size current_size) const;
+        [[nodiscard]] palette::pixel get_pixel_from_background_layer(int x) const;
+        [[nodiscard]] palette::pixel get_pixel_from_window_layer(int x) const;
+        [[nodiscard]] bool check_if_in_window(int x) const;
 
         void move_to_next_mode();
         void change_mode_to(mode new_mode);
@@ -140,9 +141,9 @@ namespace pixel_processing_unit {
         }
 
     public:
-        ppu(SDL_Renderer *renderer, interrupt_callback stat_callback, interrupt_callback v_blank_callback)
-            : request_stat_interrupt(stat_callback), request_v_blank_interrupt(v_blank_callback), renderer (renderer) {
-        }
+        ppu(SDL_Renderer *renderer, interrupt_callback&& stat_callback, interrupt_callback&& v_blank_callback)
+            : request_stat_interrupt(std::move(stat_callback)), request_v_blank_interrupt(std::move(v_blank_callback)),
+              renderer (renderer) {}
 
         void run_machine_cycle();
 
@@ -177,23 +178,23 @@ namespace pixel_processing_unit {
             oam.raw_data[address] = value;
         }
 
-        byte read_lcd_control() const { return registers.lcd_control; }
-        byte read_lcd_status() const { return registers.lcd_status; }
-        byte read_scroll_y() const { return registers.scroll_y; }
-        byte read_scroll_x() const { return registers.scroll_x; }
-        byte read_lcd_y() const { return registers.lcd_y; }
-        byte read_lcd_y_compare() const { return registers.lcd_y_compare; }
-        byte read_dma_transfer() const { return registers.dma_transfer; }
-        byte read_bg_palette() const { return registers.background_palette.read_raw_value(); }
-        byte read_sprite_palette_0() const { return registers.sprite_palette_0.read_raw_value(); }
-        byte read_sprite_palette_1() const { return registers.sprite_palette_1.read_raw_value(); }
-        byte read_window_y() const { return registers.window_y; }
-        byte read_window_x() const { return registers.window_x; }
+        [[nodiscard]] byte read_lcd_control() const { return registers.lcd_control; }
+        [[nodiscard]] byte read_lcd_status() const { return registers.lcd_status; }
+        [[nodiscard]] byte read_scroll_y() const { return registers.scroll_y; }
+        [[nodiscard]] byte read_scroll_x() const { return registers.scroll_x; }
+        [[nodiscard]] byte read_lcd_y() const { return registers.lcd_y; }
+        [[nodiscard]] byte read_lcd_y_compare() const { return registers.lcd_y_compare; }
+        [[nodiscard]] byte read_dma_transfer() const { return registers.dma_transfer; }
+        [[nodiscard]] byte read_bg_palette() const { return registers.background_palette.read_raw_value(); }
+        [[nodiscard]] byte read_sprite_palette_0() const { return registers.sprite_palette_0.read_raw_value(); }
+        [[nodiscard]] byte read_sprite_palette_1() const { return registers.sprite_palette_1.read_raw_value(); }
+        [[nodiscard]] byte read_window_y() const { return registers.window_y; }
+        [[nodiscard]] byte read_window_x() const { return registers.window_x; }
 
         void write_lcd_status(byte value) { registers.lcd_status = value; }
         void write_scroll_y(byte value) { registers.scroll_y = value; }
         void write_scroll_x(byte value) { registers.scroll_x = value; }
-        void write_lcd_y(byte value) { return; }
+        void write_lcd_y(byte value [[maybe_unused]]) {}
         void write_lcd_y_compare(byte value) { registers.lcd_y_compare = value; }
         void write_dma_transfer(byte value) { registers.dma_transfer = value; }
         void write_bg_palette(byte value) { registers.background_palette.write_raw_value(value); }

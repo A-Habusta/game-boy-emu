@@ -105,6 +105,8 @@ namespace emulator {
         else if (address == interrupt_enable_address) {
             return emu_ref.cpu.interrupt_enable_register;
         }
+
+        // Unreachable
     }
 
     emulator::emulator(SDL_Renderer* renderer, std::string_view boot_rom_path, std::string_view rom_path,

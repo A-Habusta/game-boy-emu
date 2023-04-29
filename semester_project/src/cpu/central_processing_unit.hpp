@@ -25,8 +25,8 @@ namespace central_processing_unit {
         cpu(memory_read_callback read_memory, memory_write_callback write_memory, cycle_callback run_phantom_cycle);
         void execute();
 
-        byte interrupt_enable_register;
-        byte interrupt_requested_register;
+        byte interrupt_enable_register{};
+        byte interrupt_requested_register{};
 
         void request_v_blank_interrupt() { request_interrupt(interrupt_type::vblank); }
         void request_lcd_stat_interrupt() { request_interrupt(interrupt_type::lcd_stat); }
@@ -34,23 +34,19 @@ namespace central_processing_unit {
         void request_serial_interrupt() { request_interrupt(interrupt_type::serial); }
         void request_joypad_interrupt() { request_interrupt(interrupt_type::joypad); }
 
-        void fetch_first_instruction() { prefetch_next_instruction(); }
-
     private:
 
         registers::register_file registers{};
-        byte cached_instruction{};
+        byte cached_instruction{0x00};
 
         memory_read_callback read_memory;
         memory_write_callback write_memory;
 
         cycle_callback run_phantom_cycle;
         bool interrupt_master_enable = true;
-        bool queued_ime_enable = false;
 
         enum class state {
             running,
-            halt_preparation,
             halted,
             crashed
         };
@@ -60,12 +56,11 @@ namespace central_processing_unit {
         void crash() { current_state = state::crashed; };
 
         void execute_running_state();
-        void execute_halt_preparation();
         void execute_halted_state();
         void execute_crashed_state();
 
         void execute_instruction(byte instruction);
-        void prefetch_next_instruction();
+        void prefetch_next_instruction_and_handle_interrupts();
 
         // Not class so that we can easily use it as a number
         enum interrupt_type {
@@ -77,10 +72,7 @@ namespace central_processing_unit {
             joypad = 4,
         };
 
-        void enable_interrupts();
-        void disable_interrupts();
-
-        interrupt_type check_for_interrupts();
+        interrupt_type check_for_interrupts() const;
         void acknowledge_interrupt(interrupt_type);
         void handle_interrupts(interrupt_type);
         void request_interrupt(interrupt_type);
@@ -88,26 +80,27 @@ namespace central_processing_unit {
         // Memory access methods
         //
         byte read_byte(word address) { return read_memory(address); }
-        word read_word(word address) {
-            return utility::get_word_from_byte(read_byte(address), read_byte(address + 1));
+
+        byte read_byte_at_pc_and_increment() {
+            byte val = read_byte_at_pc();
+            inc_pc();
+            return val;
         }
 
-        byte read_byte_at_pc_with_increment() { return read_byte(registers.whole.PC++); }
         // We don't use read_word here so PC is incremented after each byte read
-        word read_word_at_pc_with_increment() {
-            byte low = read_byte_at_pc_with_increment();
-            byte high = read_byte_at_pc_with_increment();
-            return utility::get_word_from_byte(low, high);
+        word read_word_at_pc_and_increment() {
+            byte low = read_byte_at_pc_and_increment();
+            byte high = read_byte_at_pc_and_increment();
+            return utility::get_word_from_bytes(low, high);
         }
+
+        byte read_byte_at_pc() { return read_byte(registers.whole.PC); }
 
         void write_byte(word address, byte value) { write_memory(address, value); }
-        void write_word_to_memory(word address, word value) {
-            write_byte(address, utility::get_low_byte(value));
-            write_byte(address + 1, utility::get_high_byte(value));
-        }
 
         void push_byte_to_stack(byte value) { write_byte(--registers.whole.SP, value); }
         void push_word_to_stack(word value) {
+            run_phantom_cycle();
             push_byte_to_stack(utility::get_high_byte(value));
             push_byte_to_stack(utility::get_low_byte(value));
         }
@@ -116,8 +109,16 @@ namespace central_processing_unit {
         word pop_word_from_stack() {
             byte low = pop_byte_from_stack();
             byte high = pop_byte_from_stack();
-            return utility::get_word_from_byte(low, high);
+            return utility::get_word_from_bytes(low, high);
         }
+
+        void fetch_instruction() { cached_instruction = read_byte_at_pc(); }
+        void fetch_instruction_and_increment_pc() {
+            fetch_instruction();
+            inc_pc();
+        }
+
+        void inc_pc() { registers.whole.PC++; }
 
         //
         // End of memory access methods
@@ -128,16 +129,24 @@ namespace central_processing_unit {
         void load(registers::whole_register_name target_register, word value);
         void load(word target_address, byte value);
 
+        void load_sp_plus_imm_to_hl();
+
         void pop(registers::whole_register_name target_register);
         void push(word value);
 
         // Always adds value to A
-        void add(byte value, bool carry = 0);
-        void sub(byte value, bool carry = 0);
+        void add(byte value, bool carry = false);
+
+        byte subtract(byte value, bool carry);
+
+        void sub(byte value);
+        void sbc(byte value);
 
         // Always adds value to HL
         void add16(word value);
-        word add_to_sp(byte value);
+        word add_signed_to_sp(byte value);
+
+        void sp_plus_signed_imm();
 
         void and_(byte value);
         void or_(byte value);
@@ -167,12 +176,14 @@ namespace central_processing_unit {
         void call(word target_address, bool condition);
 
         void return_always();
+        void return_from_interrupt();
         void return_conditional(bool condition);
-
-        void queue_enable_interrupts();
 
         void stop();
         void halt();
+
+        void enable_interrupts_instruction();
+        void disable_interrupts_instruction();
 
         void execute_cb_prefixed_instruction();
 

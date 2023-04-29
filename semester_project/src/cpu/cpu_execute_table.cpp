@@ -12,13 +12,13 @@ namespace central_processing_unit {
         // simple and readable way of doing this.
         switch(instruction) {
             //load register8 <- immediate
-            case 0x3E: load(registers::half_register_name::A, read_byte_at_pc_with_increment()); break;
-            case 0x06: load(registers::half_register_name::B, read_byte_at_pc_with_increment()); break;
-            case 0x0E: load(registers::half_register_name::C, read_byte_at_pc_with_increment()); break;
-            case 0x16: load(registers::half_register_name::D, read_byte_at_pc_with_increment()); break;
-            case 0x1E: load(registers::half_register_name::E, read_byte_at_pc_with_increment()); break;
-            case 0x26: load(registers::half_register_name::H, read_byte_at_pc_with_increment()); break;
-            case 0x2E: load(registers::half_register_name::L, read_byte_at_pc_with_increment()); break;
+            case 0x3E: load(registers::half_register_name::A, read_byte_at_pc_and_increment()); break;
+            case 0x06: load(registers::half_register_name::B, read_byte_at_pc_and_increment()); break;
+            case 0x0E: load(registers::half_register_name::C, read_byte_at_pc_and_increment()); break;
+            case 0x16: load(registers::half_register_name::D, read_byte_at_pc_and_increment()); break;
+            case 0x1E: load(registers::half_register_name::E, read_byte_at_pc_and_increment()); break;
+            case 0x26: load(registers::half_register_name::H, read_byte_at_pc_and_increment()); break;
+            case 0x2E: load(registers::half_register_name::L, read_byte_at_pc_and_increment()); break;
 
             //load register8 <- register8
             case 0x7F: load(registers::half_register_name::A, registers.half.A); break;
@@ -89,7 +89,7 @@ namespace central_processing_unit {
             case 0x0A: load(registers::half_register_name::A, read_byte(registers.whole.BC)); break;
             case 0x1A: load(registers::half_register_name::A, read_byte(registers.whole.DE)); break;
             case 0x7E: load(registers::half_register_name::A, read_byte(registers.whole.HL)); break;
-            case 0xFA: load(registers::half_register_name::A, read_byte(read_word_at_pc_with_increment())); break;
+            case 0xFA: load(registers::half_register_name::A, read_byte(read_word_at_pc_and_increment())); break;
 
             //load indirect <- register8
             case 0x70: load(registers.whole.HL, registers.half.B); break;
@@ -102,17 +102,17 @@ namespace central_processing_unit {
             case 0x02: load(registers.whole.BC, registers.half.A); break;
             case 0x12: load(registers.whole.DE, registers.half.A); break;
             case 0x77: load(registers.whole.HL, registers.half.A); break;
-            case 0xEA: load(read_word_at_pc_with_increment(), registers.half.A); break;
+            case 0xEA: load(read_word_at_pc_and_increment(), registers.half.A); break;
 
             //load indirect <- immediate
-            case 0x36: load(registers.whole.HL, read_byte_at_pc_with_increment()); break;
+            case 0x36: load(registers.whole.HL, read_byte_at_pc_and_increment()); break;
 
             //load high page memory <- A
-            case 0xE0: load(high_page | read_byte_at_pc_with_increment(), registers.half.A); break;
+            case 0xE0: load(high_page | read_byte_at_pc_and_increment(), registers.half.A); break;
             case 0xE2: load(high_page | read_byte(registers.half.C), registers.half.A); break;
 
             //load A <- high page memory
-            case 0xF0: load(registers::half_register_name::A, read_byte(high_page | read_byte_at_pc_with_increment())); break;
+            case 0xF0: load(registers::half_register_name::A, read_byte(high_page | read_byte_at_pc_and_increment())); break;
             case 0xF2: load(registers::half_register_name::A, read_byte(high_page | registers.half.C)); break;
 
             //load A <- indirect w inc/dec
@@ -124,18 +124,18 @@ namespace central_processing_unit {
             case 0x32: load(registers.whole.HL--, registers.half.A); break;
 
             //load register16 <- immediate
-            case 0x01: load(registers::whole_register_name::BC, read_word_at_pc_with_increment()); break;
-            case 0x11: load(registers::whole_register_name::DE, read_word_at_pc_with_increment()); break;
-            case 0x21: load(registers::whole_register_name::HL, read_word_at_pc_with_increment()); break;
-            case 0x31: load(registers::whole_register_name::SP, read_word_at_pc_with_increment()); break;
+            case 0x01: load(registers::whole_register_name::BC, read_word_at_pc_and_increment()); break;
+            case 0x11: load(registers::whole_register_name::DE, read_word_at_pc_and_increment()); break;
+            case 0x21: load(registers::whole_register_name::HL, read_word_at_pc_and_increment()); break;
+            case 0x31: load(registers::whole_register_name::SP, read_word_at_pc_and_increment()); break;
 
             //load indirect <- SP
-            case 0x08: load(read_word_at_pc_with_increment(), registers.whole.SP); break;
+            case 0x08: load(read_word_at_pc_and_increment(), registers.whole.SP); break;
             //load SP <- HL
             case 0xF9: run_phantom_cycle(); load(registers::whole_register_name::SP, registers.whole.HL); break;
 
             //load HL <- SP + immediate
-            case 0xF8: load(registers::whole_register_name::HL, add_to_sp(read_byte_at_pc_with_increment())); break;
+            case 0xF8: load_sp_plus_imm_to_hl(); break;
 
             //pop
             case 0xC1: pop(registers::whole_register_name::BC); break;
@@ -154,21 +154,11 @@ namespace central_processing_unit {
             case 0x80: add(registers.half.B); break;
             case 0x81: add(registers.half.C); break;
             case 0x82: add(registers.half.D); break;
-
             case 0x83: add(registers.half.E); break;
             case 0x84: add(registers.half.H); break;
             case 0x85: add(registers.half.L); break;
             case 0x86: add(read_byte(registers.whole.HL)); break;
-            case 0xC6: add(read_byte_at_pc_with_increment()); break;
-
-            //add16
-            case 0x09: add16(registers.whole.BC); break;
-            case 0x19: add16(registers.whole.DE); break;
-            case 0x29: add16(registers.whole.HL); break;
-            case 0x39: add16(registers.whole.SP); break;
-
-            //add16  SP + immediate
-            case 0xE8: registers.whole.SP = add_to_sp(read_byte_at_pc_with_increment()); run_phantom_cycle(); break;
+            case 0xC6: add(read_byte_at_pc_and_increment()); break;
 
             //adc
             case 0x8F: add(registers.half.A, registers.read_carry_flag()); break;
@@ -179,7 +169,17 @@ namespace central_processing_unit {
             case 0x8C: add(registers.half.H, registers.read_carry_flag()); break;
             case 0x8D: add(registers.half.L, registers.read_carry_flag()); break;
             case 0x8E: add(read_byte(registers.whole.HL), registers.read_carry_flag()); break;
-            case 0xCE: add(read_byte_at_pc_with_increment(), registers.read_carry_flag()); break;
+            case 0xCE: add(read_byte_at_pc_and_increment(), registers.read_carry_flag()); break;
+
+            //add16
+            case 0x09: add16(registers.whole.BC); break;
+            case 0x19: add16(registers.whole.DE); break;
+            case 0x29: add16(registers.whole.HL); break;
+            case 0x39: add16(registers.whole.SP); break;
+
+            //add16  SP + immediate
+            case 0xE8: sp_plus_signed_imm(); break;
+
 
             //sub
             case 0x97: sub(registers.half.A); break;
@@ -190,18 +190,18 @@ namespace central_processing_unit {
             case 0x94: sub(registers.half.H); break;
             case 0x95: sub(registers.half.L); break;
             case 0x96: sub(read_byte(registers.whole.HL)); break;
-            case 0xD6: sub(read_byte_at_pc_with_increment()); break;
+            case 0xD6: sub(read_byte_at_pc_and_increment()); break;
 
             //sbc
-            case 0x9F: sub(registers.half.A, registers.read_carry_flag()); break;
-            case 0x98: sub(registers.half.B, registers.read_carry_flag()); break;
-            case 0x99: sub(registers.half.C, registers.read_carry_flag()); break;
-            case 0x9A: sub(registers.half.D, registers.read_carry_flag()); break;
-            case 0x9B: sub(registers.half.E, registers.read_carry_flag()); break;
-            case 0x9C: sub(registers.half.H, registers.read_carry_flag()); break;
-            case 0x9D: sub(registers.half.L, registers.read_carry_flag()); break;
-            case 0x9E: sub(read_byte(registers.whole.HL), registers.read_carry_flag()); break;
-            case 0xDE: sub(read_byte_at_pc_with_increment(), registers.read_carry_flag()); break;
+            case 0x9F: sbc(registers.half.A); break;
+            case 0x98: sbc(registers.half.B); break;
+            case 0x99: sbc(registers.half.C); break;
+            case 0x9A: sbc(registers.half.D); break;
+            case 0x9B: sbc(registers.half.E); break;
+            case 0x9C: sbc(registers.half.H); break;
+            case 0x9D: sbc(registers.half.L); break;
+            case 0x9E: sbc(read_byte(registers.whole.HL)); break;
+            case 0xDE: sbc(read_byte_at_pc_and_increment()); break;
 
             //and
             case 0xA7: and_(registers.half.A); break;
@@ -212,7 +212,7 @@ namespace central_processing_unit {
             case 0xA4: and_(registers.half.H); break;
             case 0xA5: and_(registers.half.L); break;
             case 0xA6: and_(read_byte(registers.whole.HL)); break;
-            case 0xE6: and_(read_byte_at_pc_with_increment()); break;
+            case 0xE6: and_(read_byte_at_pc_and_increment()); break;
 
             //or
             case 0xB7: or_(registers.half.A); break;
@@ -223,7 +223,7 @@ namespace central_processing_unit {
             case 0xB4: or_(registers.half.H); break;
             case 0xB5: or_(registers.half.L); break;
             case 0xB6: or_(read_byte(registers.whole.HL)); break;
-            case 0xF6: or_(read_byte_at_pc_with_increment()); break;
+            case 0xF6: or_(read_byte_at_pc_and_increment()); break;
 
             //xor
             case 0xAF: xor_(registers.half.A); break;
@@ -234,7 +234,7 @@ namespace central_processing_unit {
             case 0xAC: xor_(registers.half.H); break;
             case 0xAD: xor_(registers.half.L); break;
             case 0xAE: xor_(read_byte(registers.whole.HL)); break;
-            case 0xEE: xor_(read_byte_at_pc_with_increment()); break;
+            case 0xEE: xor_(read_byte_at_pc_and_increment()); break;
 
             //cp
             case 0xBF: cp(registers.half.A); break;
@@ -245,7 +245,7 @@ namespace central_processing_unit {
             case 0xBC: cp(registers.half.H); break;
             case 0xBD: cp(registers.half.L); break;
             case 0xBE: cp(read_byte(registers.whole.HL)); break;
-            case 0xFE: cp(read_byte_at_pc_with_increment()); break;
+            case 0xFE: cp(read_byte_at_pc_and_increment()); break;
 
             //inc 8bit
             case 0x3C: inc(registers::half_register_name::A); break;
@@ -280,7 +280,7 @@ namespace central_processing_unit {
             case 0x3B: dec(registers::whole_register_name::SP); break;
 
             //carry
-            case 0x37: set_carry_flag(1); break;
+            case 0x37: set_carry_flag(true); break;
             case 0x3F: set_carry_flag(!registers.read_carry_flag()); break;
 
             //complement A
@@ -289,25 +289,25 @@ namespace central_processing_unit {
             case 0x27: daa(); break;
 
             //control flow
-            case 0xC3: jump(read_word_at_pc_with_increment(), true); break;
-            case 0xC2: jump(read_word_at_pc_with_increment(), !registers.read_zero_flag()); break;
-            case 0xCA: jump(read_word_at_pc_with_increment(), registers.read_zero_flag()); break;
-            case 0xD2: jump(read_word_at_pc_with_increment(), !registers.read_carry_flag()); break;
-            case 0xDA: jump(read_word_at_pc_with_increment(), registers.read_carry_flag()); break;
+            case 0xC3: jump(read_word_at_pc_and_increment(), true); break;
+            case 0xC2: jump(read_word_at_pc_and_increment(), !registers.read_zero_flag()); break;
+            case 0xCA: jump(read_word_at_pc_and_increment(), registers.read_zero_flag()); break;
+            case 0xD2: jump(read_word_at_pc_and_increment(), !registers.read_carry_flag()); break;
+            case 0xDA: jump(read_word_at_pc_and_increment(), registers.read_carry_flag()); break;
 
             case 0xE9: jump_hl(); break;
 
-            case 0x18: jump_relative(read_byte_at_pc_with_increment(), true); break;
-            case 0x20: jump_relative(read_byte_at_pc_with_increment(), !registers.read_zero_flag()); break;
-            case 0x28: jump_relative(read_byte_at_pc_with_increment(), registers.read_zero_flag()); break;
-            case 0x30: jump_relative(read_byte_at_pc_with_increment(), !registers.read_carry_flag()); break;
-            case 0x38: jump_relative(read_byte_at_pc_with_increment(), registers.read_carry_flag()); break;
+            case 0x18: jump_relative(read_byte_at_pc_and_increment(), true); break;
+            case 0x20: jump_relative(read_byte_at_pc_and_increment(), !registers.read_zero_flag()); break;
+            case 0x28: jump_relative(read_byte_at_pc_and_increment(), registers.read_zero_flag()); break;
+            case 0x30: jump_relative(read_byte_at_pc_and_increment(), !registers.read_carry_flag()); break;
+            case 0x38: jump_relative(read_byte_at_pc_and_increment(), registers.read_carry_flag()); break;
 
-            case 0xCD: call(read_word_at_pc_with_increment(), true); break;
-            case 0xC4: call(read_word_at_pc_with_increment(), !registers.read_zero_flag()); break;
-            case 0xCC: call(read_word_at_pc_with_increment(), registers.read_zero_flag()); break;
-            case 0xD4: call(read_word_at_pc_with_increment(), !registers.read_carry_flag()); break;
-            case 0xDC: call(read_word_at_pc_with_increment(), registers.read_carry_flag()); break;
+            case 0xCD: call(read_word_at_pc_and_increment(), true); break;
+            case 0xC4: call(read_word_at_pc_and_increment(), !registers.read_zero_flag()); break;
+            case 0xCC: call(read_word_at_pc_and_increment(), registers.read_zero_flag()); break;
+            case 0xD4: call(read_word_at_pc_and_increment(), !registers.read_carry_flag()); break;
+            case 0xDC: call(read_word_at_pc_and_increment(), registers.read_carry_flag()); break;
 
             case 0xC9: return_always(); break;
             case 0xC0: return_conditional(!registers.read_zero_flag()); break;
@@ -315,7 +315,7 @@ namespace central_processing_unit {
             case 0xD0: return_conditional(!registers.read_carry_flag()); break;
             case 0xD8: return_conditional(registers.read_carry_flag()); break;
 
-            case 0xD9: return_always(), interrupt_master_enable = true; break;
+            case 0xD9: return_from_interrupt(); break;
 
             case 0xC7: call(0x00, true); break;
             case 0xCF: call(0x08, true); break;
@@ -327,12 +327,12 @@ namespace central_processing_unit {
             case 0xFF: call(0x38, true); break;
 
             //misc
-            case 0x00: break;
+            case 0x00: prefetch_next_instruction_and_handle_interrupts(); break;
             case 0x10: stop(); break;
             case 0x76: halt(); break;
             case 0xCB: execute_cb_prefixed_instruction(); break;
-            case 0xF3: disable_interrupts(); break;
-            case 0xFB: queue_enable_interrupts(); break;
+            case 0xF3: disable_interrupts_instruction(); break;
+            case 0xFB: enable_interrupts_instruction(); break;
 
             //bitwise shifts
 
@@ -351,7 +351,7 @@ namespace central_processing_unit {
     }
 
     void cpu::execute_cb_prefixed_instruction() {
-        byte instruction = read_byte_at_pc_with_increment();
+        byte instruction = read_byte_at_pc_and_increment();
         // FIXME: Should be changed into an explicit table, since there is a clear pattern
         switch(instruction) {
             //rlc
@@ -656,5 +656,7 @@ namespace central_processing_unit {
             // Will never occur since every possible byte is exhausted
             default: break;
         }
+
+        prefetch_next_instruction_and_handle_interrupts();
     }
 }

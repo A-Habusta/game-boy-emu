@@ -8,6 +8,10 @@
 
 #include <SDL.h>
 
+#include <utility>
+
+#include <utility>
+
 #include "../cpu/cpu_interrupt_typedef.hpp"
 #include "../utility.hpp"
 
@@ -40,19 +44,19 @@ class joypad {
 
     interrupt_callback request_joystick_interrupt;
 
-    bool check_for_keys_high_to_low_transition(byte new_status);
+    bool check_for_keys_high_to_low_transition(byte new_status) const;
 
     // Inverted logic, pressed keys write 0, released keys 1
-    void update_pressed_keys_from_event(SDL_Event& event) { update_keys_from_event(event, 0); }
-    void update_released_keys_from_event(SDL_Event& event) { update_keys_from_event(event, 1); }
+    void update_pressed_keys_from_event(SDL_Event& event) { update_keys_from_event(event, false); }
+    void update_released_keys_from_event(SDL_Event& event) { update_keys_from_event(event, true); }
 
-    void update_keys_from_event(SDL_Event& event, bool new_value);
+    void update_keys_from_event(SDL_Event& event, bool new_value) const;
 
-    bool are_direction_keys_selected() { return !utility::get_bit(joypad_status, read_direction_buttons_pos); }
-    bool are_action_keys_selected() { return !utility::get_bit(joypad_status, read_action_buttons_pos); }
+    bool are_direction_keys_selected() const { return !utility::get_bit(joypad_status, read_direction_buttons_pos); }
+    bool are_action_keys_selected() const { return !utility::get_bit(joypad_status, read_action_buttons_pos); }
 
 public:
-    joypad(interrupt_callback callback) : request_joystick_interrupt(callback) {}
+    explicit joypad(interrupt_callback callback) : request_joystick_interrupt(std::move(std::move(callback))) {}
 
     // Bool return type is kind of a hack to get info about whether a joypad interrupt triggered quickly
     bool handle_input();
@@ -60,7 +64,7 @@ public:
     bool update_joypad_status();
 
     void write_joypad_status(byte value);
-    byte read_joypad_status();
+    byte read_joypad_status() const;
 };
 
 #endif //SEMESTER_PROJECT_JOYPAD_HPP

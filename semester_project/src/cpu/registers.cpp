@@ -31,7 +31,7 @@ namespace registers {
         }
     }
 
-    byte register_file::read_from_register(half_register_name target_register) {
+    byte register_file::read_from_register(half_register_name target_register) const {
         switch (target_register) {
             case half_register_name::A: return half.A;
             case half_register_name::F: return half.F;
@@ -45,7 +45,7 @@ namespace registers {
         }
     }
 
-    word register_file::read_from_register(whole_register_name target_register) {
+    word register_file::read_from_register(whole_register_name target_register) const {
         switch (target_register) {
             case whole_register_name::AF: return whole.AF;
             case whole_register_name::BC: return whole.BC;

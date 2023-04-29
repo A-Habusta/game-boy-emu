@@ -23,7 +23,7 @@ bool joypad::handle_input() {
 }
 
 // Keys are not remappable right now
-void joypad::update_keys_from_event(SDL_Event &event, bool new_value) {
+void joypad::update_keys_from_event(SDL_Event &event, bool new_value) const {
     switch (event.key.keysym.sym) {
         case SDLK_UP: utility::write_bit(joypad_direction_keys_state, key_up_pos, new_value); break;
         case SDLK_DOWN: utility::write_bit(joypad_direction_keys_state, key_down_pos, new_value); break;
@@ -39,7 +39,7 @@ void joypad::update_keys_from_event(SDL_Event &event, bool new_value) {
     }
 }
 
-bool joypad::check_for_keys_high_to_low_transition(byte new_status) {
+bool joypad::check_for_keys_high_to_low_transition(byte new_status) const {
     byte old_status_lower_nibble = utility::get_lower_nibble(joypad_status);
     byte new_status_lower_nibble = utility::get_lower_nibble(new_status);
 
@@ -72,7 +72,7 @@ bool joypad::update_joypad_status() {
 }
 
 
-byte joypad::read_joypad_status() {
+byte joypad::read_joypad_status() const {
     return joypad_status;
 }
 

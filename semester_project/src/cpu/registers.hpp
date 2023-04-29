@@ -58,15 +58,15 @@ namespace registers {
         void write_half_carry_flag(bool value) { half.F = utility::write_bit(half.F, half_carry_flag_pos, value); }
         void write_carry_flag(bool value) { half.F = utility::write_bit(half.F, carry_flag_pos, value); }
 
-        bool read_zero_flag() { return utility::get_bit(half.F, zero_flag_pos); }
-        bool read_subtract_flag() { return utility::get_bit(half.F, subtract_flag_pos); }
-        bool read_half_carry_flag() { return utility::get_bit(half.F, half_carry_flag_pos); }
-        bool read_carry_flag() { return utility::get_bit(half.F, carry_flag_pos); }
+        bool read_zero_flag() const { return utility::get_bit(half.F, zero_flag_pos); }
+        bool read_subtract_flag() const { return utility::get_bit(half.F, subtract_flag_pos); }
+        bool read_half_carry_flag() const { return utility::get_bit(half.F, half_carry_flag_pos); }
+        bool read_carry_flag() const { return utility::get_bit(half.F, carry_flag_pos); }
 
         void write_to_register(half_register_name register_name, byte value);
         void write_to_register(whole_register_name  register_name, word value);
-        byte read_from_register(half_register_name register_name);
-        word read_from_register(whole_register_name register_name);
+        byte read_from_register(half_register_name register_name) const;
+        word read_from_register(whole_register_name register_name) const;
     private:
         enum {
             zero_flag_pos = 7,

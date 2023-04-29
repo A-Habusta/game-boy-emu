@@ -20,21 +20,20 @@ namespace pixel_processing_unit {
 
         struct pixel {
             pixel(byte value) : value(value & internal_color_mask) {}
-            byte get_value() const { return value; }
-
-            bool is_transparent() const { return value == 0; }
+            [[nodiscard]] byte get_value() const { return value; }
+            [[nodiscard]] bool is_transparent() const { return value == 0; }
 
         private:
             byte value;
         };
 
-        real_pixel_type convert_to_real_pixel(pixel pixel) const {
+        [[nodiscard]] real_pixel_type convert_to_real_pixel(pixel pixel) const {
             return master_palette[get_color_index(pixel)];
         }
 
         // To be used by outside I/O
         void write_raw_value(byte value) { colors = value; }
-        byte read_raw_value() const { return colors; }
+        [[nodiscard]] byte read_raw_value() const { return colors; }
     private:
         static constexpr int colors_per_palette = 4;
         static constexpr byte internal_color_mask = 0b11;
@@ -47,7 +46,7 @@ namespace pixel_processing_unit {
         // The palettes are actualy indices into a master palette, every index is 2 bits
         byte colors;
 
-        byte get_color_index(pixel pixel) const {
+        [[nodiscard]] byte get_color_index(pixel pixel) const {
             byte palette_index = pixel.get_value();
             byte result = 0;
 
@@ -63,7 +62,7 @@ namespace pixel_processing_unit {
         constexpr static int size = 8;
         constexpr static int bytes_per_row = 2;
 
-        palette::pixel get_pixel(int x, int y) const {
+        [[nodiscard]] palette::pixel get_pixel(int x, int y) const {
             x %= size;
             y %= size;
 
@@ -84,14 +83,14 @@ namespace pixel_processing_unit {
     struct tile_data {
         struct index {
             index() = default;
-            byte get_value() const { return value; }
+            [[nodiscard]] byte get_value() const { return value; }
 
         private:
             byte value;
         };
 
         struct map {
-            tile_data::index get_tile_index(int x, int y) const {
+            [[nodiscard]] tile_data::index get_tile_index(int x, int y) const {
                 x %= width;
                 y %= height;
 
@@ -104,11 +103,11 @@ namespace pixel_processing_unit {
             tile_data::index data[height][width];
         };
 
-        tile get_tile_oam(index index) const {
+        [[nodiscard]] tile get_tile_oam(index index) const {
             return get_tile_method_8000(index.get_value());
         }
 
-        tile get_tile_bg_and_window(index index, bool method) const {
+        [[nodiscard]] tile get_tile_bg_and_window(index index, bool method) const {
             byte value = index.get_value();
             return method ? get_tile_method_8000(value) : get_tile_method_8800(value);
         }
@@ -119,27 +118,27 @@ namespace pixel_processing_unit {
 
         tile tiles[tile_count];
 
-        tile get_tile_method_8000(byte index) const {
+        [[nodiscard]] tile get_tile_method_8000(byte index) const {
             return tiles[index];
         }
 
-        tile get_tile_method_8800(byte index) const {
+        [[nodiscard]] tile get_tile_method_8800(byte index) const {
             int signed_index = (int)(int8_t)(index);
             return tiles[tile_offset_method_8800 + signed_index];
         }
     };
 
     struct sprite {
-        bool get_priority() const { return get_attribute(priority_flag_position); }
-        bool get_y_flip() const { return get_attribute(y_flip_flag_position); }
-        bool get_x_flip() const { return get_attribute(x_flip_flag_position); }
+        [[nodiscard]] bool get_priority() const { return get_attribute(priority_flag_position); }
+        [[nodiscard]] bool get_y_flip() const { return get_attribute(y_flip_flag_position); }
+        [[nodiscard]] bool get_x_flip() const { return get_attribute(x_flip_flag_position); }
         // There are only two palettes, so we can use a single bit
-        bool get_palette_number() const { return get_attribute(palette_number_position); }
+        [[nodiscard]] bool get_palette_number() const { return get_attribute(palette_number_position); }
 
         // I don't think the raw values are ever used, so we can just return the corrected ones
-        int get_corrected_x() const { return x - x_offset; }
-        int get_corrected_y() const { return y - y_offset; }
-        tile_data::index get_tile_number() const { return used_tile; }
+        [[nodiscard]] int get_corrected_x() const { return x - x_offset; }
+        [[nodiscard]] int get_corrected_y() const { return y - y_offset; }
+        [[nodiscard]] tile_data::index get_tile_number() const { return used_tile; }
 
         enum size {
             size8x8 = 0,
@@ -166,7 +165,7 @@ namespace pixel_processing_unit {
             palette_number_position = 4,
         };
 
-        bool get_attribute(int flag_position) const {
+        [[nodiscard]] bool get_attribute(int flag_position) const {
             return utility::get_bit(attributes, flag_position);
         }
     };
@@ -183,7 +182,7 @@ namespace pixel_processing_unit {
         // be increasing
         int start_index = 0;
 
-        sprite sprites[max_sprites];
+        sprite sprites[max_sprites]{};
 
         // Private so we can control the creation of this object
         sprite_cache() = default;
@@ -272,22 +271,22 @@ namespace pixel_processing_unit {
         byte window_y;
         byte window_x;
 
-        bool get_lcd_display_enable() const { return get_lcd_control_flag(lcd_display_enable); }
-        bool get_window_tile_map_select() const { return get_lcd_control_flag(window_tile_map_select); }
-        bool get_window_draw_enable() const { return get_lcd_control_flag(window_draw_enable); }
-        bool get_bg_and_window_tile_data_select() const { return get_lcd_control_flag(bg_and_window_tile_data_select); }
-        bool get_bg_tile_map_select() const { return get_lcd_control_flag(bg_tile_map_select); }
-        bool get_sprite_draw_enable() const { return get_lcd_control_flag(sprite_draw_enable); }
-        bool get_bg_window_display_priority() const { return get_lcd_control_flag(bg_window_display_priority); }
-        sprite::size get_sprite_size() const {
+        [[nodiscard]] bool get_lcd_display_enable() const { return get_lcd_control_flag(lcd_display_enable); }
+        [[nodiscard]] bool get_window_tile_map_select() const { return get_lcd_control_flag(window_tile_map_select); }
+        [[nodiscard]] bool get_window_draw_enable() const { return get_lcd_control_flag(window_draw_enable); }
+        [[nodiscard]] bool get_bg_and_window_tile_data_select() const { return get_lcd_control_flag(bg_and_window_tile_data_select); }
+        [[nodiscard]] bool get_bg_tile_map_select() const { return get_lcd_control_flag(bg_tile_map_select); }
+        [[nodiscard]] bool get_sprite_draw_enable() const { return get_lcd_control_flag(sprite_draw_enable); }
+        [[nodiscard]] bool get_bg_window_display_priority() const { return get_lcd_control_flag(bg_window_display_priority); }
+        [[nodiscard]] sprite::size get_sprite_size() const {
             return get_lcd_control_flag(sprite_size) ? sprite::size::size8x16 : sprite::size::size8x8;
         }
 
-        bool get_coincidence_interrupt_enable() const { return get_lcd_status_flag(coincidence_interrupt_enable); }
-        bool get_oam_interrupt_enable() const { return get_lcd_status_flag(oam_interrupt_enable); }
-        bool get_v_blank_interrupt_enable() const { return get_lcd_status_flag(v_blank_interrupt_enable); }
-        bool get_h_blank_interrupt_enable() const { return get_lcd_status_flag(h_blank_interrupt_enable); }
-        bool get_coincidence_flag() const { return get_lcd_status_flag(coincidence_flag); }
+        [[nodiscard]] bool get_coincidence_interrupt_enable() const { return get_lcd_status_flag(coincidence_interrupt_enable); }
+        [[nodiscard]] bool get_oam_interrupt_enable() const { return get_lcd_status_flag(oam_interrupt_enable); }
+        [[nodiscard]] bool get_v_blank_interrupt_enable() const { return get_lcd_status_flag(v_blank_interrupt_enable); }
+        [[nodiscard]] bool get_h_blank_interrupt_enable() const { return get_lcd_status_flag(h_blank_interrupt_enable); }
+        [[nodiscard]] bool get_coincidence_flag() const { return get_lcd_status_flag(coincidence_flag); }
 
         void write_coincidence_flag(bool value) { write_lcd_status_flag(coincidence_flag, value); }
 
@@ -308,7 +307,7 @@ namespace pixel_processing_unit {
             bg_window_display_priority = 0
         };
 
-        bool get_lcd_control_flag(lcd_control_flag flag) const {
+        [[nodiscard]] bool get_lcd_control_flag(lcd_control_flag flag) const {
             return utility::get_bit(lcd_control, flag);
         }
 
@@ -320,11 +319,11 @@ namespace pixel_processing_unit {
             coincidence_flag = 2,
         };
 
-        bool get_lcd_status_flag(lcd_status_flags flag) const {
+        [[nodiscard]] bool get_lcd_status_flag(lcd_status_flags flag) const {
             return utility::get_bit(lcd_status, flag);
         }
 
-        void write_lcd_status_flag(lcd_status_flags flag, bool value) {
+        void write_lcd_status_flag(lcd_status_flags flag, bool value) const {
             utility::write_bit(lcd_status, flag, value);
         }
     };
@@ -353,9 +352,7 @@ namespace pixel_processing_unit {
             int sprite_height = sprite::get_height_from_size(sprite_size);
             sprite_cache::factory cache_factory{};
 
-            for (int i = 0; i < sprite_count; ++i) {
-                sprite current_sprite = sprites[i];
-
+            for (auto current_sprite : sprites) {
                 int sprite_start_y = current_sprite.get_corrected_y();
                 int sprite_end_y = sprite_start_y + sprite_height;
 

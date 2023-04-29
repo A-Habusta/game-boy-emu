@@ -8,7 +8,7 @@
 
 namespace audio_processing_unit {
     struct apu {
-        void run_cycle();
+        static void run_cycle();
     };
 }
 

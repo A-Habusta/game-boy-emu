@@ -39,7 +39,7 @@ namespace emulator {
     class emulator {
         class memory_map {
         public:
-            memory_map(emulator& emulator) : emu_ref(emulator) { }
+            explicit memory_map(emulator& emulator) : emu_ref(emulator) { }
 
             byte read_from_address(word address);
             void write_to_address(word address, byte value);
@@ -92,12 +92,12 @@ namespace emulator {
 
             void start_dma(byte upper_address_byte) {
                 dma_bytes_left = dma_bytes_copied_amount;
-                dma_source_address = utility::get_word_from_byte(0, upper_address_byte);
+                dma_source_address = utility::get_word_from_bytes(0, upper_address_byte);
             }
 
             int dma_bytes_left{0};
             word dma_source_address{};
-            bool is_dma_active() { return dma_bytes_left > 0; }
+            bool is_dma_active() const { return dma_bytes_left > 0; }
 
             emulator& emu_ref;
 
@@ -114,7 +114,7 @@ namespace emulator {
 
         static constexpr duration frame_duration = std::chrono::nanoseconds((std::size_t)ns_per_frame);
 
-        int cycle_counter;
+        std::size_t cycle_counter{};
         time_point last_frame_time_point;
 
         central_processing_unit::cpu cpu;
@@ -149,8 +149,6 @@ namespace emulator {
                 stop_loop();
             }
         }
-
-        void initialize_cpu() { cpu.fetch_first_instruction(); }
     };
 }
 

@@ -1,13 +1,14 @@
 
 #include <string_view>
 #include <iostream>
+#include <thread>
 #include <SDL.h>
 
 #include "emulator.hpp"
 
 using namespace std::literals::string_view_literals;
 
-constexpr int screen_size_factor = 2;
+constexpr int screen_size_factor = 4;
 
 int main() {
     int window_height = pixel_processing_unit::screen_pixel_height * screen_size_factor;
@@ -23,13 +24,13 @@ int main() {
 
     std::string_view boot_rom_path = "/home/adrian/Downloads/dmg_boot.bin"sv;
     //std::string_view rom_path = "/home/adrian/Downloads/tetris.gb"sv;
-    std::string_view rom_path = "/home/adrian/git/gb-test-roms/cpu_instrs/individual/02-interrupts.gb"sv;
+    std::string_view rom_path = "/home/adrian/git/gb-test-roms/cpu_instrs/individual/04-op r,imm.gb"sv;
     std::string_view sram_path = ""sv;
 
     emulator::emulator emu(renderer, boot_rom_path, rom_path, sram_path);
 
-    // Perform first fetch from bootrom
-    emu.initialize_cpu();
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
 
     while(true) {
         try {

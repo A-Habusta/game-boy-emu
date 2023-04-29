@@ -14,13 +14,13 @@ protected:
     cartridge_mbc() = default;
 public:
     virtual void load_rom_from_file(std::string_view path) = 0;
-    virtual void load_sram_from_file(std::string_view path) {};
+    virtual void load_sram_from_file(std::string_view path [[maybe_unused]]) {};
 
-    virtual byte read_rom(word address) const = 0;
-    virtual byte read_ram(word address) const { return utility::undefined_byte; };
+    [[nodiscard]] virtual byte read_rom(word address) const = 0;
+    [[nodiscard]] virtual byte read_ram(word address [[maybe_unused]]) const { return utility::undefined_byte; };
 
-    virtual void write_rom(word address, byte value) {};
-    virtual void write_ram(word address, byte value) {};
+    virtual void write_rom(word address [[maybe_unused]], byte value [[maybe_unused]]) {};
+    virtual void write_ram(word address [[maybe_unused]], byte value [[maybe_unused]]) {};
 
     virtual ~cartridge_mbc() = default;
 };
@@ -32,7 +32,7 @@ class plain_rom : public cartridge_mbc {
 public:
     void load_rom_from_file(std::string_view path) override;
 
-    byte read_rom(word address) const override { return rom[address]; };
+    [[nodiscard]] byte read_rom(word address) const override { return rom[address]; };
 };
 
 #endif //SEMESTER_PROJECT_CARTRIDGE_MEMORY_CONTROLLERS_HPP

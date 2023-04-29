@@ -4,17 +4,20 @@
 //
 
 #include "central_processing_unit.hpp"
+
+#include <utility>
+
+#include <utility>
 #include "../utility.hpp"
 
 namespace central_processing_unit {
     cpu::cpu(memory_read_callback read_memory, memory_write_callback write_memory, cycle_callback run_phantom_cycle)
-        : read_memory(read_memory), write_memory(write_memory), run_phantom_cycle(run_phantom_cycle) {
+        : read_memory(std::move(std::move(read_memory))), write_memory(std::move(std::move(write_memory))), run_phantom_cycle(std::move(std::move(run_phantom_cycle))) {
     };
 
     void cpu::execute() {
         switch (current_state) {
             case state::running: execute_running_state(); break;
-            case state::halt_preparation: execute_halt_preparation(); break;
             case state::halted: execute_halted_state(); break;
             case state::crashed: execute_crashed_state(); break;
 
@@ -24,34 +27,14 @@ namespace central_processing_unit {
     }
 
     void cpu::execute_running_state() {
-        if (queued_ime_enable) {
-            enable_interrupts();
-        }
-
-        if (interrupt_master_enable) {
-            interrupt_type interrupt = check_for_interrupts();
-            handle_interrupts(interrupt);
-        }
-
         execute_instruction(cached_instruction);
-
-        prefetch_next_instruction();
     }
-
-    void cpu::execute_halt_preparation() {
-        interrupt_type interrupt = check_for_interrupts();
-        if (interrupt == none) {
-            run_phantom_cycle();
-            current_state = state::halted;
-        }
-        else {
-            current_state = state::running;
-        }
-    };
 
     void cpu::execute_halted_state() {
         if (check_for_interrupts() != none) {
             current_state = state::running;
+
+            prefetch_next_instruction_and_handle_interrupts();
             return;
         }
 
@@ -63,30 +46,26 @@ namespace central_processing_unit {
         run_phantom_cycle();
     }
 
-    void cpu::prefetch_next_instruction() {
-        cached_instruction = read_byte_at_pc_with_increment();
+    void cpu::prefetch_next_instruction_and_handle_interrupts() {
+        fetch_instruction();
+
+        interrupt_type interrupt = check_for_interrupts();
+        if (interrupt_master_enable && interrupt != none){
+            handle_interrupts(interrupt);
+        }
+        else {
+            inc_pc();
+        }
     }
 
-    void cpu::enable_interrupts() {
-        interrupt_master_enable = true;
-        queued_ime_enable = false;
-    }
-
-    void cpu::disable_interrupts() {
-        interrupt_master_enable = false;
-        queued_ime_enable = false;
-    }
-
-    cpu::interrupt_type cpu::check_for_interrupts() {
+    cpu::interrupt_type cpu::check_for_interrupts() const {
         // Interrupts are serviced with priority going from interrupt in bit 0 -> bit 4
         for (int i = 0; i < interrupt_types_count; ++i) {
             bool interrupt_requested = utility::get_bit(interrupt_requested_register, i);
             bool interrupt_enabled = utility::get_bit(interrupt_enable_register, i);
 
             if (interrupt_requested && interrupt_enabled) {
-                interrupt_type interrupt = static_cast<interrupt_type>(i);
-
-                acknowledge_interrupt(interrupt);
+                auto interrupt = static_cast<interrupt_type>(i);
                 return interrupt;
             }
         }
@@ -98,15 +77,20 @@ namespace central_processing_unit {
         if (interrupt == none)
             return;
 
-        disable_interrupts();
+        acknowledge_interrupt(interrupt);
 
+        interrupt_master_enable = false;
+
+        word interrupt_handler_address = interrupt_jump_targets[interrupt];
+
+        // 3 cycles
+        push_word_to_stack(registers.whole.PC);
+
+        registers.whole.PC = interrupt_handler_address;
         // 1 cycle
         run_phantom_cycle();
-        // 3 cycles
-        word interrupt_handler_address = interrupt_jump_targets[interrupt];
-        call(interrupt_handler_address, true);
         // 1 cycle
-        prefetch_next_instruction();
+        fetch_instruction_and_increment_pc();
     }
 
     void cpu::request_interrupt(interrupt_type interrupt) {

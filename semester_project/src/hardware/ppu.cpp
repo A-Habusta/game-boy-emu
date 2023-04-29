@@ -53,8 +53,7 @@ namespace pixel_processing_unit {
 
     void ppu::run_h_blank_t_cycle() {
         // Nothing happens here
-        return;
-    }
+           }
 
     void ppu::run_v_blank_t_cycle() {
         // Render frame if first cycle
@@ -113,7 +112,7 @@ namespace pixel_processing_unit {
 
     }
 
-    palette::pixel ppu::get_pixel_from_sprite(int x, sprite current_sprite, sprite::size sprite_size) {
+    palette::pixel ppu::get_pixel_from_sprite(int x, sprite current_sprite, sprite::size sprite_size) const {
         int sprite_width = sprite::width;
         int sprite_height = sprite::get_height_from_size(sprite_size);
 
