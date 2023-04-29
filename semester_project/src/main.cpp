@@ -8,13 +8,15 @@
 
 using namespace std::literals::string_view_literals;
 
-constexpr int screen_size_factor = 2;
+constexpr int screen_size_factor = 4;
 
 int main() {
     int window_height = pixel_processing_unit::screen_pixel_height * screen_size_factor;
     int window_width = pixel_processing_unit::screen_pixel_width * screen_size_factor;
 
-    SDL_Window* main_window = SDL_CreateWindow("Gameboy Emulator",
+    SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_Window* main_window = SDL_CreateWindow("Game Boy Emulator",
                                               SDL_WINDOWPOS_UNDEFINED,
                                               SDL_WINDOWPOS_UNDEFINED,
                                               window_width,
@@ -40,6 +42,7 @@ int main() {
             SDL_DestroyRenderer(renderer);
             SDL_DestroyWindow(main_window);
             SDL_Quit();
+
             return 0;
         }
     }

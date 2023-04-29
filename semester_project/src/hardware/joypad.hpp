@@ -26,10 +26,10 @@ class joypad {
     };
 
     enum {
-        key_up_pos = 0,
-        key_down_pos = 1,
-        key_left_pos = 2,
-        key_right_pos = 3,
+        key_right_pos = 0,
+        key_left_pos = 1,
+        key_up_pos = 2,
+        key_down_pos = 3,
 
         key_a_pos = 0,
         key_b_pos = 1,
@@ -50,7 +50,7 @@ class joypad {
     void update_pressed_keys_from_event(SDL_Event& event) { update_keys_from_event(event, false); }
     void update_released_keys_from_event(SDL_Event& event) { update_keys_from_event(event, true); }
 
-    void update_keys_from_event(SDL_Event& event, bool new_value) const;
+    void update_keys_from_event(SDL_Event& event, bool new_value);
 
     bool are_direction_keys_selected() const { return !utility::get_bit(joypad_status, read_direction_buttons_pos); }
     bool are_action_keys_selected() const { return !utility::get_bit(joypad_status, read_action_buttons_pos); }
@@ -58,7 +58,7 @@ class joypad {
     void update_joypad_status();
 
 public:
-    explicit joypad(interrupt_callback callback) : request_joystick_interrupt(std::move(std::move(callback))) {}
+    explicit joypad(interrupt_callback&& callback) : request_joystick_interrupt(std::move(callback)) {}
 
     void handle_input();
 

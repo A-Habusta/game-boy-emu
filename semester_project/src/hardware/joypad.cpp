@@ -8,7 +8,6 @@
 
 void joypad::handle_input() {
     SDL_Event event;
-    // PollEvent also updates the global keyboard state
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_QUIT: throw emulator::exit();
@@ -23,20 +22,27 @@ void joypad::handle_input() {
 }
 
 // Keys are not remappable right now
-void joypad::update_keys_from_event(SDL_Event &event, bool new_value) const {
-    switch (event.key.keysym.sym) {
-        case SDLK_UP: utility::write_bit(joypad_direction_keys_state, key_up_pos, new_value); break;
-        case SDLK_DOWN: utility::write_bit(joypad_direction_keys_state, key_down_pos, new_value); break;
-        case SDLK_LEFT: utility::write_bit(joypad_direction_keys_state, key_left_pos, new_value); break;
-        case SDLK_RIGHT: utility::write_bit(joypad_direction_keys_state, key_right_pos, new_value); break;
+void joypad::update_keys_from_event(SDL_Event &event, bool new_value) {
+    byte new_direction = joypad_direction_keys_state;
+    byte new_action = joypad_action_keys_state;
 
-        case SDLK_z: utility::write_bit(joypad_action_keys_state, key_a_pos, new_value); break;
-        case SDLK_x: utility::write_bit(joypad_action_keys_state, key_b_pos, new_value); break;
-        case SDLK_RETURN: utility::write_bit(joypad_action_keys_state, key_start_pos, new_value); break;
-        case SDLK_SPACE: utility::write_bit(joypad_action_keys_state, key_select_pos, new_value); break;
+    switch (event.key.keysym.sym) {
+        case SDLK_UP: new_direction = utility::write_bit(joypad_direction_keys_state, key_up_pos, new_value); break;
+        case SDLK_DOWN: new_direction = utility::write_bit(joypad_direction_keys_state, key_down_pos, new_value); break;
+        case SDLK_LEFT: new_direction = utility::write_bit(joypad_direction_keys_state, key_left_pos, new_value); break;
+        case SDLK_RIGHT: new_direction = utility::write_bit(joypad_direction_keys_state, key_right_pos, new_value);
+            break;
+
+        case SDLK_z: new_action = utility::write_bit(joypad_action_keys_state, key_a_pos, new_value); break;
+        case SDLK_x: new_action = utility::write_bit(joypad_action_keys_state, key_b_pos, new_value); break;
+        case SDLK_RETURN: new_action = utility::write_bit(joypad_action_keys_state, key_start_pos, new_value); break;
+        case SDLK_SPACE: new_action = utility::write_bit(joypad_action_keys_state, key_select_pos, new_value); break;
 
         default: break;
     }
+
+    joypad_direction_keys_state = new_direction;
+    joypad_action_keys_state = new_action;
 }
 
 bool joypad::check_for_keys_high_to_low_transition(byte new_status) const {

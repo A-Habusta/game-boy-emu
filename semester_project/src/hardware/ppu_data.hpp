@@ -81,16 +81,8 @@ namespace pixel_processing_unit {
     };
 
     struct tile_data {
-        struct index {
-            index() = default;
-            [[nodiscard]] byte get_value() const { return value; }
-
-        private:
-            byte value;
-        };
-
         struct map {
-            [[nodiscard]] tile_data::index get_tile_index(int x, int y) const {
+            [[nodiscard]] byte get_tile_index(int x, int y) const {
                 x %= width;
                 y %= height;
 
@@ -100,21 +92,20 @@ namespace pixel_processing_unit {
             static constexpr int height = 32;
             static constexpr int width = 32;
 
-            tile_data::index data[height][width];
+            byte data[height][width];
         };
 
-        [[nodiscard]] tile get_tile_oam(index index) const {
-            return get_tile_method_8000(index.get_value());
+        [[nodiscard]] tile get_tile_oam(byte index) const {
+            return get_tile_method_8000(index);
         }
 
-        [[nodiscard]] tile get_tile_bg_and_window(index index, bool method) const {
-            byte value = index.get_value();
-            return method ? get_tile_method_8000(value) : get_tile_method_8800(value);
+        [[nodiscard]] tile get_tile_bg_and_window(byte index, bool method) const {
+            return method ? get_tile_method_8000(index) : get_tile_method_8800(index);
         }
 
     private:
         static constexpr int tile_count = 384;
-        static constexpr int tile_offset_method_8800 = 128;
+        static constexpr word method_8800_base_index = 256;
 
         tile tiles[tile_count];
 
@@ -123,8 +114,10 @@ namespace pixel_processing_unit {
         }
 
         [[nodiscard]] tile get_tile_method_8800(byte index) const {
-            int signed_index = (int)(int8_t)(index);
-            return tiles[tile_offset_method_8800 + signed_index];
+            word extended_offset = utility::sign_extend_byte_to_word(index);
+            word result_index = method_8800_base_index + extended_offset;
+
+            return tiles[result_index];
         }
     };
 
@@ -135,27 +128,34 @@ namespace pixel_processing_unit {
         // There are only two palettes, so we can use a single bit
         [[nodiscard]] bool get_palette_number() const { return get_attribute(palette_number_position); }
 
-        // I don't think the raw values are ever used, so we can just return the corrected ones
-        [[nodiscard]] int get_corrected_x() const { return x - x_offset; }
-        [[nodiscard]] int get_corrected_y() const { return y - y_offset; }
-        [[nodiscard]] tile_data::index get_tile_number() const { return used_tile; }
+        [[nodiscard]] int get_y() const { return y; }
+        [[nodiscard]] int get_x() const { return x; }
+        [[nodiscard]] byte get_tile_number() const { return used_tile; }
 
         enum size {
             size8x8 = 0,
             size8x16 = 1
         };
 
+        static constexpr byte get_correct_tile_index_for_size(byte index, int y_coordinate,  size size) {
+            if (size == size8x8)
+                return index;
+
+            bool is_in_second_tile = y_coordinate >= tile::size;
+            return utility::write_bit(index, 0, is_in_second_tile);
+        }
+
         static constexpr int width = tile::size;
         static constexpr int get_height_from_size(size size) { return size == size8x8 ? tile::size : tile::size * 2; }
 
-    private:
         static constexpr int x_offset = 8;
         static constexpr int y_offset = 16;
+    private:
 
         // data can be private, since the PPU never writes to this
         byte y;
         byte x;
-        tile_data::index used_tile;
+        byte used_tile;
         byte attributes;
 
         enum {
@@ -189,12 +189,15 @@ namespace pixel_processing_unit {
 
         void sort_sprites () {
             auto comparator = [](const sprite& a, const sprite& b) {
-                return a.get_corrected_x() < b.get_corrected_x();
+                return a.get_x() < b.get_x();
             };
 
             // We need stable sort to preserve the order of sprites with the same x coordinate because they are
             // prioritized by it
-            std::stable_sort(std::begin(sprites), std::end(sprites), comparator);
+            auto begin = std::begin(sprites);
+            auto end = begin + sprite_count;
+
+            std::stable_sort(begin, end, comparator);
         }
 
 
@@ -203,18 +206,19 @@ namespace pixel_processing_unit {
 
         std::optional<sprite> get_first_sprite_at_current_x(int x_coordinate) {
             for (int i = start_index; i < sprite_count; ++i) {
-                int sprite_start_x = sprites[i].get_corrected_x();
+                int offset_x = x_coordinate + sprite::x_offset;
+
+                int sprite_start_x = sprites[i].get_x();
                 int sprite_end_x = sprite_start_x + sprite::width;
 
-                // If at any point we skip a sprite, that sprite will be skipped for the rest of the scanline
-                start_index = i;
-
                 // If the x coordinate is lower than the sprite's start x, we can skip the rest of the sprites
-                if (x_coordinate < sprite_start_x) {
+                if (offset_x < sprite_start_x) {
                     break;
                 }
+
+                start_index = i;
                 // If the x coordinate is within the sprite's x range, we have found the first sprite
-                else if (x_coordinate >= sprite_start_x && x_coordinate < sprite_end_x) {
+                if (offset_x >= sprite_start_x && offset_x < sprite_end_x) {
                     last_found_sprite_index = i;
                     return sprites[i];
                 }
@@ -225,12 +229,16 @@ namespace pixel_processing_unit {
 
         // Only meant to be run after get_first_sprite_at_current_x
         std::optional<sprite> get_next_sprite_at_current_x(int x_coordinate) {
-            if (last_found_sprite_index == sprite_count - 1) { return std::nullopt; }
+            if (last_found_sprite_index == sprite_count - 1)
+                return std::nullopt;
 
-            int sprite_start_x = sprites[last_found_sprite_index + 1].get_corrected_x();
+            // We offset the input X so that partially offscreen sprites are still drawn
+            int offset_x = x_coordinate + sprite::x_offset;
+
+            int sprite_start_x = sprites[last_found_sprite_index + 1].get_x();
             int sprite_end_x = sprite_start_x + sprite::width;
 
-            if (x_coordinate >= sprite_start_x && x_coordinate < sprite_end_x) {
+            if (offset_x >= sprite_start_x && offset_x < sprite_end_x) {
                 ++last_found_sprite_index;
                 return sprites[last_found_sprite_index];
             }
@@ -247,10 +255,13 @@ namespace pixel_processing_unit {
         }
     public:
         void add_sprite(sprite sprite) {
+            if (cache.sprite_count == max_sprites)
+                return;
+
             cache.sprites[cache.sprite_count++] = sprite;
         }
 
-        sprite_cache create_cache(){
+        sprite_cache create_cache() {
             finalize();
             return cache;
         }
@@ -352,11 +363,13 @@ namespace pixel_processing_unit {
             int sprite_height = sprite::get_height_from_size(sprite_size);
             sprite_cache::factory cache_factory{};
 
+            int offset_y = line_y_coordinate + sprite::y_offset;
+
             for (auto current_sprite : sprites) {
-                int sprite_start_y = current_sprite.get_corrected_y();
+                int sprite_start_y = current_sprite.get_y();
                 int sprite_end_y = sprite_start_y + sprite_height;
 
-                if (line_y_coordinate >= sprite_start_y && line_y_coordinate < sprite_end_y) {
+                if (offset_y >= sprite_start_y && offset_y < sprite_end_y) {
                     cache_factory.add_sprite(current_sprite);
                 }
             }

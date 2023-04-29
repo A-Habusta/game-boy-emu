@@ -53,7 +53,7 @@ namespace pixel_processing_unit {
 
     void ppu::run_h_blank_t_cycle() {
         // Nothing happens here
-           }
+    }
 
     void ppu::run_v_blank_t_cycle() {
         // Render frame if first cycle
@@ -77,11 +77,13 @@ namespace pixel_processing_unit {
                 bg_pixel = get_pixel_from_background_layer(x);
         }
 
+        // SPRITE DRAWING
         if (!registers.get_sprite_draw_enable()) {
             return registers.background_palette.convert_to_real_pixel(bg_pixel);
         }
 
         std::optional<sprite> current_sprite = current_line_sprites->get_first_sprite_at_current_x(x);
+
         if (!current_sprite) {
             // Return bg if there is no sprite
             return registers.background_palette.convert_to_real_pixel(bg_pixel);
@@ -90,7 +92,7 @@ namespace pixel_processing_unit {
 
         palette::pixel sprite_pixel = get_pixel_from_sprite(x, *current_sprite, sprite_size);
 
-        while (sprite_pixel.is_transparent() ) {
+        while (sprite_pixel.is_transparent()) {
             current_sprite = current_line_sprites->get_next_sprite_at_current_x(x);
             if (!current_sprite) {
                 // Return bg if there is no non-transparent sprite
@@ -109,23 +111,24 @@ namespace pixel_processing_unit {
         palette sprite_palette = palette_index ? registers.sprite_palette_1 : registers.sprite_palette_0;
 
         return sprite_palette.convert_to_real_pixel(sprite_pixel);
-
     }
 
     palette::pixel ppu::get_pixel_from_sprite(int x, sprite current_sprite, sprite::size sprite_size) const {
         int sprite_width = sprite::width;
         int sprite_height = sprite::get_height_from_size(sprite_size);
 
-        int sprite_x = x - current_sprite.get_corrected_x();
-        int sprite_y = registers.lcd_y - current_sprite.get_corrected_y();
-
+        int sprite_x = x - current_sprite.get_x() + sprite::x_offset;
+        int sprite_y = registers.lcd_y - current_sprite.get_y() + sprite::y_offset;
 
         if (current_sprite.get_x_flip())
             sprite_x = sprite_width - sprite_x - 1;
         if (current_sprite.get_y_flip())
             sprite_y = sprite_height - sprite_y - 1;
 
+
         auto tile_number = current_sprite.get_tile_number();
+        tile_number = sprite::get_correct_tile_index_for_size(tile_number, sprite_y, sprite_size);
+
         auto tile = vram.tiles.tiles.get_tile_oam(tile_number);
 
         return tile.get_pixel(sprite_x, sprite_y);

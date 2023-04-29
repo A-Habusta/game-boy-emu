@@ -130,13 +130,13 @@ namespace pixel_processing_unit {
 
         void power_on() {
             is_powered_on = true;
-            registers.lcd_y = 0;
-            current_mode = mode::h_blank;
             remaining_t_cycles = mode_length[current_mode];
         }
 
         void power_off() {
             is_powered_on = false;
+            change_mode_to(mode::h_blank);
+            registers.lcd_y = 0;
             renderer.render_blank_frame();
         }
 
