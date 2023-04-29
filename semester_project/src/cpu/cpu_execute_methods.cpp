@@ -78,8 +78,8 @@ namespace central_processing_unit {
 
         registers.write_zero_flag(false);
         registers.write_subtract_flag(false);
-        registers.write_half_carry_flag(utility::get_bit((registers.whole.SP & 0xFFF) + (value & 0xFFF), 12));
-        registers.write_carry_flag((dword)registers.whole.SP + (dword)value > 0xFFFF);
+        registers.write_half_carry_flag(utility::get_bit((registers.whole.SP & 0xF) + (value & 0xF), 4));
+        registers.write_carry_flag(utility::get_bit((registers.whole.SP & 0xFF) + (value & 0xFF), 8));
 
         word result = registers.whole.SP + sign_extended_value;
 
