@@ -109,7 +109,7 @@ namespace central_processing_unit {
 
             //load high page memory <- A
             case 0xE0: load(high_page | read_byte_at_pc_and_increment(), registers.half.A); break;
-            case 0xE2: load(high_page | read_byte(registers.half.C), registers.half.A); break;
+            case 0xE2: load(high_page | registers.half.C, registers.half.A); break;
 
             //load A <- high page memory
             case 0xF0: load(registers::half_register_name::A, read_byte(high_page | read_byte_at_pc_and_increment())); break;

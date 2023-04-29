@@ -23,9 +23,8 @@ int main() {
     SDL_Renderer* renderer = SDL_CreateRenderer(main_window, -1, SDL_RENDERER_ACCELERATED);
 
     std::string_view boot_rom_path = "/home/adrian/Downloads/dmg_boot.bin"sv;
-    //std::string_view rom_path = "/home/adrian/Downloads/dr_mario.gb"sv;
+    std::string_view rom_path = "/home/adrian/Downloads/dr_mario.gb"sv;
     //std::string_view rom_path = "/home/adrian/Downloads/tetris.gb"sv;
-    std::string_view rom_path = "/home/adrian/git/gb-test-roms/cpu_instrs/individual/03-op sp,hl.gb"sv;
     std::string_view sram_path = ""sv;
 
     emulator::emulator emu(renderer, boot_rom_path, rom_path, sram_path);
