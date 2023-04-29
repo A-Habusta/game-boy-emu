@@ -21,7 +21,7 @@ namespace registers {
     }
     void register_file::write_to_register(whole_register_name target_register, word value) {
         switch (target_register) {
-            case whole_register_name::AF: whole.AF = value; break;
+            case whole_register_name::AF: whole.AF = value & AF_mask; break;
             case whole_register_name::BC: whole.BC = value; break;
             case whole_register_name::DE: whole.DE = value; break;
             case whole_register_name::HL: whole.HL = value; break;
@@ -47,7 +47,7 @@ namespace registers {
 
     word register_file::read_from_register(whole_register_name target_register) const {
         switch (target_register) {
-            case whole_register_name::AF: return whole.AF;
+            case whole_register_name::AF: return whole.AF & AF_mask;
             case whole_register_name::BC: return whole.BC;
             case whole_register_name::DE: return whole.DE;
             case whole_register_name::HL: return whole.HL;

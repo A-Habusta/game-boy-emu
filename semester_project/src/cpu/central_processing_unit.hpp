@@ -98,6 +98,10 @@ namespace central_processing_unit {
         byte read_byte_at_pc() { return read_byte(registers.whole.PC); }
 
         void write_byte(word address, byte value) { write_memory(address, value); }
+        void write_word(word address, word value) {
+            write_byte(address, utility::get_low_byte(value));
+            write_byte(address + 1, utility::get_high_byte(value));
+        }
 
         void push_byte_to_stack(byte value) { write_byte(--registers.whole.SP, value); }
         void push_word_to_stack(word value) {
@@ -130,6 +134,8 @@ namespace central_processing_unit {
         void load(registers::whole_register_name target_register, word value);
         void load(word target_address, byte value);
 
+        void load_sp_to_indirect(word address);
+
         void load_sp_plus_imm_to_hl();
 
         void pop(registers::whole_register_name target_register);
@@ -155,7 +161,7 @@ namespace central_processing_unit {
 
         void cp(byte value);
 
-        byte shared_inc_dec(byte value, byte offset);
+        byte shared_inc_dec(byte value, byte offset, bool subtract_flag);
         void inc(registers::half_register_name target_register);
         void inc(word target_address);
         void inc(registers::whole_register_name target_register);

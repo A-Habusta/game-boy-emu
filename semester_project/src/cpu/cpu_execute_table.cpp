@@ -130,7 +130,7 @@ namespace central_processing_unit {
             case 0x31: load(registers::whole_register_name::SP, read_word_at_pc_and_increment()); break;
 
             //load indirect <- SP
-            case 0x08: load(read_word_at_pc_and_increment(), registers.whole.SP); break;
+            case 0x08: load_sp_to_indirect(read_word_at_pc_and_increment()); break;
             //load SP <- HL
             case 0xF9: run_phantom_cycle(); load(registers::whole_register_name::SP, registers.whole.HL); break;
 

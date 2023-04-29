@@ -68,6 +68,8 @@ namespace registers {
         byte read_from_register(half_register_name register_name) const;
         word read_from_register(whole_register_name register_name) const;
     private:
+        static constexpr int AF_mask = 0xFFF0;
+
         enum {
             zero_flag_pos = 7,
             subtract_flag_pos = 6,

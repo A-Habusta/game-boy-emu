@@ -23,6 +23,12 @@ namespace central_processing_unit {
         prefetch_next_instruction_and_handle_interrupts();
     }
 
+    void cpu::load_sp_to_indirect(word target_address) {
+        write_word(target_address, registers.whole.SP);
+
+        prefetch_next_instruction_and_handle_interrupts();
+    }
+
     void cpu::load_sp_plus_imm_to_hl() {
         byte imm = read_byte_at_pc_and_increment();
         word result = add_signed_to_sp(imm);
@@ -97,7 +103,7 @@ namespace central_processing_unit {
 
         registers.write_zero_flag(result == 0);
         registers.write_subtract_flag(true);
-        registers.write_half_carry_flag((((registers.half.A & 0xF) - (value & 0xF) - carry) & 0x10) != 0);
+        registers.write_half_carry_flag(utility::get_bit((registers.half.A & 0xF) - (value & 0xF) - carry, 4));
         registers.write_carry_flag((word)registers.half.A < ((word)value + carry));
 
         return result;
@@ -149,19 +155,18 @@ namespace central_processing_unit {
     }
 
     void cpu::cp(byte value) {
-        // We don't want to change the value of A, only the flags
         subtract(value, false);
 
         prefetch_next_instruction_and_handle_interrupts();
     }
 
 
-    byte cpu::shared_inc_dec(byte value, byte offset) {
+    byte cpu::shared_inc_dec(byte value, byte offset, bool subtract_flag) {
         byte result = value + offset;
 
         registers.write_zero_flag(result == 0);
-        registers.write_subtract_flag(false);
-        registers.write_half_carry_flag((((value & 0xF) + offset) & 0x10) != 0);
+        registers.write_subtract_flag(subtract_flag);
+        registers.write_half_carry_flag(utility::get_bit((value & 0xF) + offset, 4));
 
         return result;
     }
@@ -169,7 +174,7 @@ namespace central_processing_unit {
     void cpu::inc(registers::half_register_name target_register) {
         byte value = registers.read_from_register(target_register);
 
-        byte result = shared_inc_dec(value, 1);
+        byte result = shared_inc_dec(value, 0x01, false);
         registers.write_to_register(target_register, result);
 
         prefetch_next_instruction_and_handle_interrupts();
@@ -178,7 +183,7 @@ namespace central_processing_unit {
     void cpu::inc(word target_address) {
         byte value = read_byte(target_address);
 
-        byte result = shared_inc_dec(value, 1);
+        byte result = shared_inc_dec(value, 0x01, false);
         write_byte(target_address, result);
 
         prefetch_next_instruction_and_handle_interrupts();
@@ -199,7 +204,7 @@ namespace central_processing_unit {
     void cpu::dec(registers::half_register_name target_register) {
         byte value = registers.read_from_register(target_register);
 
-        byte result = shared_inc_dec(value, -1);
+        byte result = shared_inc_dec(value, -1, true);
         registers.write_to_register(target_register, result);
 
         prefetch_next_instruction_and_handle_interrupts();
@@ -208,7 +213,7 @@ namespace central_processing_unit {
     void cpu::dec(word target_address) {
         byte value = read_byte(target_address);
 
-        byte result = shared_inc_dec(value, -1);
+        byte result = shared_inc_dec(value, -1, true);
         write_byte(target_address, result);
 
         prefetch_next_instruction_and_handle_interrupts();

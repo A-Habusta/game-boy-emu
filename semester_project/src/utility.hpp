@@ -69,7 +69,6 @@ namespace utility {
         }
 
         file.read(reinterpret_cast<char*>(target), size);
-
         file.close();
     }
 
