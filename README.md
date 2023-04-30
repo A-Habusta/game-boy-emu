@@ -17,8 +17,11 @@ This project depends on SDL2. Refer to your package manager on how to install it
 download it.
 
 ### Build
+##### Linux
 To build the project, run `cmake .` and then `make` in the root directory of the project.
 This will create a binary called `semester_project`. Use the command above to run the project.
+##### Windows
+You will need to have `cmake` and `vcpkg` installed. To build the project you will also need to pass `vcpkg.cmake` to `cmake`. To learn how to do this, follow this link: https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/cmake-integration. Building can also be done in Visual Studio.
 
 ### Controls
 The controls are mapped to the keyboard as follows:
