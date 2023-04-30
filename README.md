@@ -33,3 +33,13 @@ The controls are mapped to the keyboard as follows:
 | Down           | Down Arrow   |
 | Left           | Left Arrow   |
 | Right          | Right Arrow  |
+
+### Missing features
+The following features are missing from the emulator:
+ - Sound
+ - Serial communication
+ - Cartridge memory controllers 
+   - Only games with simple ROM work, check if game ROM has bit 0x0147 set to 0x00
+   - Confirmed working games are Tetris and Dr. Mario
+ - PPU variable length pixel transfer
+ - Exact T-Cycle timing
