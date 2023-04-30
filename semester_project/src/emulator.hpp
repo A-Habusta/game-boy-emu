@@ -33,13 +33,13 @@ namespace emulator {
     constexpr std::size_t m_cycle_frequency = t_cycle_frequency / t_cycles_per_m_cycle; //1MHz
     constexpr std::size_t m_cycles_per_frame = 17566;
 
-    constexpr double frame_frequency = m_cycle_frequency / m_cycles_per_frame; //59.7Hz
+    constexpr double frame_frequency = (double)m_cycle_frequency / m_cycles_per_frame; //59.7Hz
     constexpr double ns_per_frame = 1000000000 / frame_frequency;
 
     class emulator {
         class memory_map {
         public:
-            explicit memory_map(emulator& emulator) : emu_ref(emulator) { }
+            explicit memory_map(emulator& emulator) : emu_ref(emulator) {}
 
             byte read_from_address(word address);
             void write_to_address(word address, byte value);
