@@ -29,7 +29,7 @@ class cartridge {
 public:
     cartridge(std::string_view boot_rom_path, std::string_view rom_path, std::string_view sram_path);
 
-    byte read_boot_rom_disable() const { return boot_rom_register; }
+    [[nodiscard]] byte read_boot_rom_disable() const { return boot_rom_register; }
     void write_boot_rom_disable(byte value) {
         if (value > 0)
             boot_rom_enabled = false;

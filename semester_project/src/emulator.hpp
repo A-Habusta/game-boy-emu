@@ -97,7 +97,7 @@ namespace emulator {
 
             int dma_bytes_left{0};
             word dma_source_address{};
-            bool is_dma_active() const { return dma_bytes_left > 0; }
+            [[nodiscard]] bool is_dma_active() const { return dma_bytes_left > 0; }
 
             emulator& emu_ref;
 

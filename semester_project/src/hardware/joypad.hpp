@@ -44,7 +44,7 @@ class joypad {
 
     interrupt_callback request_joystick_interrupt;
 
-    bool check_for_keys_high_to_low_transition(byte new_status) const;
+    [[nodiscard]] bool check_for_keys_high_to_low_transition(byte new_status) const;
 
     // Inverted logic, pressed keys write 0, released keys 1
     void update_pressed_keys_from_event(SDL_Event& event) { update_keys_from_event(event, false); }
@@ -52,8 +52,8 @@ class joypad {
 
     void update_keys_from_event(SDL_Event& event, bool new_value);
 
-    bool are_direction_keys_selected() const { return !utility::get_bit(joypad_status, read_direction_buttons_pos); }
-    bool are_action_keys_selected() const { return !utility::get_bit(joypad_status, read_action_buttons_pos); }
+    [[nodiscard]] bool are_direction_keys_selected() const { return !utility::get_bit(joypad_status, read_direction_buttons_pos); }
+    [[nodiscard]] bool are_action_keys_selected() const { return !utility::get_bit(joypad_status, read_action_buttons_pos); }
 
     void update_joypad_status();
 
@@ -63,7 +63,7 @@ public:
     void handle_input();
 
     void write_joypad_status(byte value);
-    byte read_joypad_status() const;
+    [[nodiscard]] byte read_joypad_status() const;
 };
 
 #endif //SEMESTER_PROJECT_JOYPAD_HPP

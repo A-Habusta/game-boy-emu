@@ -73,7 +73,7 @@ namespace central_processing_unit {
             joypad = 4,
         };
 
-        interrupt_type check_for_interrupts() const;
+        [[nodiscard]] interrupt_type check_for_interrupts() const;
         void acknowledge_interrupt(interrupt_type);
         void handle_interrupts(interrupt_type);
         void request_interrupt(interrupt_type);

@@ -117,7 +117,7 @@ namespace pixel_processing_unit {
 
         // y is implicit;
         palette::real_pixel_type get_pixel(int x);
-        palette::pixel get_pixel_from_sprite(int x, sprite current_sprite, sprite::size current_size) const;
+        [[nodiscard]] palette::pixel get_pixel_from_sprite(int x, sprite current_sprite, sprite::size current_size) const;
         [[nodiscard]] palette::pixel get_pixel_from_background_layer(int x) const;
         [[nodiscard]] palette::pixel get_pixel_from_window_layer(int x) const;
         [[nodiscard]] bool check_if_in_window(int x) const;
