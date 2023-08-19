@@ -10,7 +10,6 @@
 #include <optional>
 #include <cstring>
 #include <utility>
-#include <utility>
 #include <SDL.h>
 
 #include "../cpu/cpu_interrupt_typedef.hpp"
