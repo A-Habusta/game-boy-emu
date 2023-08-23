@@ -20,6 +20,9 @@ download it.
 To build the project, run `cmake .` and then `make` in the root directory of the project.
 This will create a binary called `semester_project`. Use the command above to run the project.
 
+To build the programming documentation, run `make` in the `doc` directory. This will create a document called 
+`documentation.pdf`.
+
 ### Controls
 The controls are mapped to the keyboard as follows:
 
@@ -40,6 +43,7 @@ The following features are missing from the emulator:
  - Serial communication
  - Cartridge memory controllers 
    - Only games with simple ROM work, check if game ROM has bit 0x0147 set to 0x00
-   - Confirmed working games are Tetris and Dr. Mario
+   - Saving games (using the SRAM file) is not supported yet
+   - Confirmed working games are ***Tetris*** and ***Dr. Mario***
  - PPU variable length pixel transfer
  - Exact T-Cycle timing
