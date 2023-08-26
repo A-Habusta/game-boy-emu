@@ -9,7 +9,7 @@ build-docs-job:       # This job runs in the build stage, which runs first.
     - echo "Compiling the documentation..."
     - cd semester_project/doc
     - make
-    - move documentation.pdf ..
+    - mv documentation.pdf ..
     - make clean
     - echo "Compile complete."
 
