@@ -24,7 +24,7 @@ This will create a binary called `semester_project`. Use the command above to ru
 You will need to have `cmake` and `vcpkg` installed. To build the project you will also need to pass `vcpkg.cmake` to `cmake`. To learn how to do this, follow this link: https://learn.microsoft.com/en-us/vcpkg/users/buildsystems/cmake-integration. Building can also be done in Visual Studio.
 
 ##### Documentation
-To manually build the documentation, go to the `doc` folder and run `make`. You need to have the `pdflatex` command available on your system, and necessary LaTeX packages available. A compiled version is available in the project root.
+To manually build the documentation, go to the `doc` folder and run `make`. You need to have the `pdflatex` command available on your system, and necessary LaTeX packages available. A compiled version is available in the `semester_project` folder.
 
 
 ### Controls
