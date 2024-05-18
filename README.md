@@ -1,4 +1,4 @@
-# Adrian Habusta
+# Game Boy Emulator
 
 ### Quick rundown of the project
 This project is an emulator for the original Game Boy console. Usage of the project is:
